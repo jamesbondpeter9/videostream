@@ -5,18 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Stream - Portal</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .model-tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 140px;
+            overflow-y: auto;
+            padding: 4px;
+            scrollbar-width: thin;
+        }
+        .model-tag-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .model-tag-pill:hover {
+            border-color: var(--card-border-hover);
+            color: #fff;
+        }
+        .model-tag-pill.selected {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+        }
+    </style>
 </head>
 <body>
     <div class="site-container">
         <div class="nav-bar-compact" style="display: flex; gap: 8px; margin-bottom: 24px;">
-            <a href="index.html" class="mondrian-nav-card" style="width: 110px;">
-                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px;">Home</div>
+            <a href="index.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
+                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">Home</div>
             </a>
-            <a href="models.html" class="mondrian-nav-card" style="width: 110px;">
-                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px;">Models</div>
+            <a href="models.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
+                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">Models</div>
             </a>
-            <a href="stream.html" class="mondrian-nav-card" style="width: 110px;">
-                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px;">+ Add</div>
+            <a href="stream.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
+                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">+ Add</div>
             </a>
         </div>
 
@@ -32,9 +65,15 @@
                         <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Stream URL</label>
                         <input type="text" id="streamUrl" required placeholder="https://www.youtube.com/watch?v=...">
                     </div>
-                    <div style="margin-bottom: 20px;">
+                    <div style="margin-bottom: 16px;">
                         <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Thumbnail URL (Optional)</label>
                         <input type="text" id="streamThumbnail" placeholder="Leave blank to auto-detect YouTube thumb">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Tag Models</label>
+                        <div id="modelTagsContainer" class="model-tags-container">
+                            <span style="color: var(--text-muted); font-size: 0.8rem;">No models found in directory.</span>
+                        </div>
                     </div>
                     <button type="submit" class="btn-primary" style="width: 100%;">Save & Export JSON</button>
                 </form>
@@ -56,6 +95,30 @@
             const urlInput = document.getElementById('streamUrl');
             const thumbInput = document.getElementById('streamThumbnail');
             const previewContainer = document.getElementById('previewContainer');
+            const modelTagsContainer = document.getElementById('modelTagsContainer');
+
+            // Load and render model tags from storage
+            const models = StorageDB.getModels();
+            const selectedModels = new Set();
+
+            if (models.length > 0) {
+                modelTagsContainer.innerHTML = '';
+                models.forEach(model => {
+                    const pill = document.createElement('div');
+                    pill.className = 'model-tag-pill';
+                    pill.textContent = model.name;
+                    pill.addEventListener('click', () => {
+                        if (selectedModels.has(model.name)) {
+                            selectedModels.delete(model.name);
+                            pill.classList.remove('selected');
+                        } else {
+                            selectedModels.add(model.name);
+                            pill.classList.add('selected');
+                        }
+                    });
+                    modelTagsContainer.appendChild(pill);
+                });
+            }
 
             function updatePreview() {
                 let url = urlInput.value.trim();
@@ -111,10 +174,10 @@
                     title,
                     url,
                     thumbnail: thumbnail || '',
-                    models: []
+                    models: Array.from(selectedModels)
                 });
 
-                alert('Stream saved successfully! videos.json has been downloaded.');
+                alert('Stream saved with tagged models! videos.json has been downloaded.');
                 window.location.href = 'index.html';
             });
         });
