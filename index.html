@@ -5,49 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Portal - Home</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .nav-bar-compact {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Video Portal</h1>
-            <nav>
-                <a href="index.html">Home</a>
-                <a href="models.html">Models</a>
-                <a href="stream.html">Streams</a>
-            </nav>
-        </header>
+    <div class="site-container">
+        <!-- Compact Nav Bar -->
+        <div class="nav-bar-compact">
+            <a href="index.html" class="mondrian-nav-card">
+                <div class="mondrian-nav-box">Home</div>
+            </a>
+            <a href="models.html" class="mondrian-nav-card">
+                <div class="mondrian-nav-box">Models</div>
+            </a>
+            <a href="stream.html" class="mondrian-nav-card">
+                <div class="mondrian-nav-box">+ Add</div>
+            </a>
+        </div>
 
-        <main>
-            <section class="list-section">
-                <h2>Featured Streams</h2>
-                <div id="homeStreamsContainer" class="mondrian-grid"></div>
-            </section>
-        </main>
+        <!-- Main Stream Mondrian Grid -->
+        <div id="mondrianGrid" class="mondrian-grid"></div>
     </div>
 
     <script src="storage.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
-            const container = document.getElementById('homeStreamsContainer');
+            
+            const grid = document.getElementById('mondrianGrid');
             const streams = StorageDB.getStreams();
 
             if (streams.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-muted);">No streams available yet. Add some via <a href="stream.html" style="color: var(--accent-gold);">Streams</a>.</p>';
+                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 40px;">No streams found. Click "+ Add" to create one.</div>`;
                 return;
             }
 
-            container.innerHTML = streams.map((stream, index) => `
-                <a href="watch.html?index=${index}" class="mondrian-card">
-                    <div class="mondrian-thumb">
-                        <img src="${stream.thumbnail || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe'}" alt="${stream.title}">
-                    </div>
-                    <div class="card-body">
-                        <h3>${stream.title}</h3>
-                        <small style="color: var(--text-muted);">Models: ${stream.models && stream.models.length > 0 ? stream.models.join(', ') : 'None'}</small>
-                    </div>
-                </a>
-            `).join('');
+            streams.forEach((stream, index) => {
+                const card = document.createElement('a');
+                card.href = `watch.html?index=${index}`;
+                card.className = 'mondrian-card';
+
+                const thumbDiv = document.createElement('div');
+                thumbDiv.className = 'mondrian-thumb';
+
+                let thumbSrc = stream.thumbnail;
+                if (!thumbSrc && stream.url) {
+                    if (stream.url.includes('youtube.com') || stream.url.includes('youtu.be')) {
+                        let ytId = '';
+                        if (stream.url.includes('embed/')) ytId = stream.url.split('embed/')[1].split('?')[0];
+                        else if (stream.url.includes('watch?v=')) ytId = stream.url.split('watch?v=')[1].split('&')[0];
+                        else if (stream.url.includes('youtu.be/')) ytId = stream.url.split('youtu.be/')[1].split('?')[0];
+                        if (ytId) thumbSrc = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                    }
+                }
+
+                if (thumbSrc) {
+                    const img = new Image();
+                    img.src = thumbSrc;
+                    img.onload = () => {
+                        if (img.naturalHeight > img.naturalWidth) {
+                            card.classList.add('portrait');
+                            thumbDiv.classList.add('portrait-mode');
+                        } else {
+                            card.classList.add('landscape');
+                        }
+                    };
+                    thumbDiv.innerHTML = `
+                        <img src="${thumbSrc}" alt="${stream.title}">
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px; background: linear-gradient(to top, rgba(0,0,0,0.85), transparent); font-weight: 700; font-size: 0.85rem; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                            ${stream.title}
+                        </div>
+                    `;
+                } else {
+                    card.classList.add('landscape');
+                    thumbDiv.innerHTML = `<span style="color:#fff; padding:20px; display:block;">${stream.title}</span>`;
+                }
+
+                card.appendChild(thumbDiv);
+                grid.appendChild(card);
+            });
         });
     </script>
 </body>
