@@ -3,89 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Models - Video Portal</title>
+    <title>Models Directory - Portal</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .models-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .filter-bar {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 24px;
+            scrollbar-width: thin;
+        }
+        .filter-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(20px);
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 35px 70px rgba(0,0,0,0.95), var(--neon-glow);
+        }
+        .model-delete-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 28px;
+            height: 28px;
+            background: rgba(0, 0, 0, 0.65);
+            border: 1px solid rgba(255, 107, 107, 0.4);
+            border-radius: 50%;
+            color: #ff6b6b;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            opacity: 0;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+        .mondrian-thumb:hover .model-delete-btn {
+            opacity: 1;
+        }
+        .model-delete-btn:hover {
+            background: rgba(255, 50, 50, 0.9);
+            color: #ffffff;
+            border-color: #ff3232;
+            transform: scale(1.1);
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Manage Models</h1>
-            <nav>
-                <a href="index.html">Home</a>
-                <a href="models.html">Models</a>
-                <a href="stream.html">Streams</a>
-            </nav>
-        </header>
+    <div class="site-container">
+        <div class="models-header">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <a href="index.html" class="mondrian-nav-card" style="width: 120px;">
+                    <div class="mondrian-nav-box" style="font-size: 0.9rem;">← Home</div>
+                </a>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">Models Directory</h1>
+            </div>
+            <button id="openModalBtn" class="btn-primary">+ Add Model</button>
+        </div>
 
-        <main>
-            <section class="form-section">
-                <h2>Add New Model</h2>
-                <form id="modelForm">
-                    <div class="form-group">
-                        <label for="modelName">Model Name:</label>
-                        <input type="text" id="modelName" required placeholder="Enter model name">
-                    </div>
-                    <div class="form-group">
-                        <label for="modelThumbnail">Thumbnail Image URL:</label>
-                        <input type="url" id="modelThumbnail" required placeholder="https://images.unsplash.com/...">
-                    </div>
-                    <button type="submit" class="btn-primary">Save Model</button>
-                </form>
-            </section>
+        <div id="filterBar" class="filter-bar">
+            <button class="filter-btn active" data-letter="ALL">ALL</button>
+        </div>
 
-            <section class="list-section">
-                <h2>Existing Models</h2>
-                <div id="modelsListContainer" class="grid-container"></div>
-            </section>
-        </main>
+        <div id="modelsGrid" class="mondrian-grid"></div>
+    </div>
+
+    <div id="modelModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="font-size: 1.2rem; margin-bottom: 16px; color: #fff;">Add New Model</h2>
+            <form id="addModelForm">
+                <div style="margin-bottom: 14px;">
+                    <label style="display:block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Model Name</label>
+                    <input type="text" id="modelNameInput" placeholder="e.g., Jane Doe" required>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display:block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Thumbnail / Profile Image URL</label>
+                    <input type="text" id="modelThumbInput" placeholder="https://..." required>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">Save Model</button>
+                    <button type="button" id="closeModalBtn" style="background: rgba(255,255,255,0.1); border: 1px solid var(--card-border); color: #fff; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; flex: 1;">Cancel</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script src="storage.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
-            renderModels();
-
-            document.getElementById('modelForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const name = document.getElementById('modelName').value.trim();
-                const thumbnail = document.getElementById('modelThumbnail').value.trim();
-
-                if (!name || !thumbnail) return;
-
-                StorageDB.addModel(name, thumbnail);
-                this.reset();
-                renderModels();
-            });
+            renderModels('ALL');
         });
 
-        function renderModels() {
-            const container = document.getElementById('modelsListContainer');
-            const models = StorageDB.getModels();
-            if (!container) return;
+        const filterBar = document.getElementById('filterBar');
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        alphabet.forEach(letter => {
+            const btn = document.createElement('button');
+            btn.className = 'filter-btn';
+            btn.dataset.letter = letter;
+            btn.textContent = letter;
+            filterBar.appendChild(btn);
+        });
 
-            if (models.length === 0) {
-                container.innerHTML = '<p>No models added yet.</p>';
+        const modal = document.getElementById('modelModal');
+        document.getElementById('openModalBtn').addEventListener('click', () => modal.style.display = 'flex');
+        document.getElementById('closeModalBtn').addEventListener('click', () => modal.style.display = 'none');
+
+        const addModelForm = document.getElementById('addModelForm');
+        addModelForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('modelNameInput').value.trim();
+            const thumb = document.getElementById('modelThumbInput').value.trim();
+            if(name && thumb) {
+                StorageDB.addModel(name, thumb);
+                modal.style.display = 'none';
+                addModelForm.reset();
+                renderModels(document.querySelector('.filter-btn.active').dataset.letter);
+            }
+        });
+
+        function renderModels(selectedLetter) {
+            const grid = document.getElementById('modelsGrid');
+            grid.innerHTML = '';
+            const models = StorageDB.getModels();
+
+            const indexedModels = models.map((m, idx) => ({ ...m, originalIndex: idx }));
+
+            const filtered = indexedModels.filter(m => {
+                if(selectedLetter === 'ALL') return true;
+                return m.name.toUpperCase().startsWith(selectedLetter);
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 40px;">No models found.</div>`;
                 return;
             }
 
-            container.innerHTML = models.map((model, index) => `
-                <div class="card">
-                    <img src="${model.thumbnail}" alt="${model.name}" style="width:100%; height:160px; object-fit:cover;">
-                    <div class="card-body">
-                        <h3>${model.name}</h3>
-                        <button onclick="deleteModel(${index})" class="btn-danger">Delete</button>
-                    </div>
-                </div>
-            `).join('');
+            filtered.forEach(model => {
+                const card = document.createElement('div');
+                card.className = 'mondrian-card portrait';
+
+                const thumbDiv = document.createElement('div');
+                thumbDiv.className = 'mondrian-thumb portrait-mode';
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'model-delete-btn';
+                deleteBtn.innerHTML = '×';
+                deleteBtn.title = `Delete ${model.name}`;
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm(`Are you sure you want to delete "${model.name}"?`)) {
+                        StorageDB.removeModel(model.originalIndex);
+                        renderModels(document.querySelector('.filter-btn.active').dataset.letter);
+                    }
+                });
+
+                if(model.thumbnail) {
+                    const img = new Image();
+                    img.src = model.thumbnail;
+                    img.onload = () => {
+                        if(img.naturalWidth > img.naturalHeight) {
+                            card.className = 'mondrian-card landscape';
+                            thumbDiv.className = 'mondrian-thumb';
+                        }
+                    };
+                    thumbDiv.innerHTML = `
+                        <img src="${model.thumbnail}" alt="${model.name}">
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 16px; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); font-weight: 700; font-size: 0.95rem; color: #fff;">
+                            ${model.name}
+                        </div>
+                    `;
+                } else {
+                    thumbDiv.innerHTML = `<span>${model.name}</span>`;
+                }
+
+                thumbDiv.appendChild(deleteBtn);
+                card.appendChild(thumbDiv);
+                grid.appendChild(card);
+            });
         }
 
-        function deleteModel(index) {
-            if (confirm('Delete this model?')) {
-                StorageDB.removeModel(index);
-                renderModels();
+        filterBar.addEventListener('click', (e) => {
+            if(e.target.classList.contains('filter-btn')) {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                renderModels(e.target.dataset.letter);
             }
-        }
+        });
     </script>
 </body>
 </html>
