@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream - Video Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Manage Streams</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="models.html">Models</a>
+                <a href="stream.html">Streams</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="form-section">
+                <h2>Add New Stream</h2>
+                <form id="streamForm">
+                    <div class="form-group">
+                        <label for="streamTitle">Stream Title:</label>
+                        <input type="text" id="streamTitle" required placeholder="Enter stream title">
+                    </div>
+                    <div class="form-group">
+                        <label for="streamUrl">Stream URL:</label>
+                        <input type="url" id="streamUrl" required placeholder="https://www.youtube.com/watch?v=...">
+                    </div>
+                    <div class="form-group">
+                        <label for="streamThumbnail">Thumbnail URL:</label>
+                        <input type="url" id="streamThumbnail" placeholder="https://images.unsplash.com/...">
+                    </div>
+                    <div class="form-group">
+                        <label>Associate Models:</label>
+                        <div id="modelsCheckboxGrid" class="checkbox-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:10px; max-height:160px; overflow-y:auto; padding:10px; background:rgba(0,0,0,0.4); border:1px solid var(--card-border); border-radius:12px;"></div>
+                    </div>
+                    <button type="submit" class="btn-primary">Save Stream</button>
+                </form>
+            </section>
+
+            <section class="list-section">
+                <h2>Existing Streams</h2>
+                <div id="streamsListContainer" class="grid-container"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="storage.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await StorageDB.initDB();
+            renderModelCheckboxes();
+            renderStreams();
+
+            document.getElementById('streamForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const title = document.getElementById('streamTitle').value.trim();
+                const url = document.getElementById('streamUrl').value.trim();
+                const thumbnail = document.getElementById('streamThumbnail').value.trim();
+
+                const selectedModels = Array.from(document.querySelectorAll('input[name="streamModel"]:checked'))
+                    .map(cb => cb.value);
+
+                if (!title || !url) return;
+
+                StorageDB.addStream({
+                    title,
+                    url,
+                    thumbnail: thumbnail || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe',
+                    models: selectedModels
+                });
+
+                this.reset();
+                renderModelCheckboxes();
+                renderStreams();
+            });
+        });
+
+        function renderModelCheckboxes() {
+            const container = document.getElementById('modelsCheckboxGrid');
+            const models = StorageDB.getModels();
+            if (!container) return;
+
+            if (models.length === 0) {
+                container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">No models available.</span>';
+                return;
+            }
+
+            container.innerHTML = models.map(model => `
+                <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-main); cursor:pointer;">
+                    <input type="checkbox" name="streamModel" value="${model.name}" style="accent-color:var(--accent-gold);">
+                    ${model.name}
+                </label>
+            `).join('');
+        }
+
+        function renderStreams() {
+            const container = document.getElementById('streamsListContainer');
+            const streams = StorageDB.getStreams();
+            if (!container) return;
+
+            if (streams.length === 0) {
+                container.innerHTML = '<p>No streams added yet.</p>';
+                return;
+            }
+
+            container.innerHTML = streams.map((stream, index) => `
+                <div class="card">
+                    <img src="${stream.thumbnail}" alt="${stream.title}" style="width:100%; height:140px; object-fit:cover;">
+                    <div class="card-body">
+                        <h3>${stream.title}</h3>
+                        <p><a href="watch.html?index=${index}" style="color:var(--accent-gold); text-decoration:none;">Watch</a></p>
+                        <button onclick="deleteStream(${index})" class="btn-danger">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteStream(index) {
+            if (confirm('Delete this stream?')) {
+                StorageDB.removeStream(index);
+                renderStreams();
+            }
+        }
+    </script>
+</body>
+</html>
