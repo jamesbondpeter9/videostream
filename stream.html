@@ -3,66 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream - Video Portal</title>
+    <title>Add Stream - Portal</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Manage Streams</h1>
-            <nav>
-                <a href="index.html">Home</a>
-                <a href="models.html">Models</a>
-                <a href="stream.html">Streams</a>
-            </nav>
-        </header>
+    <div class="site-container">
+        <!-- Compact Nav Bar -->
+        <div class="nav-bar-compact" style="display: flex; gap: 8px; margin-bottom: 24px;">
+            <a href="index.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
+                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">Home</div>
+            </a>
+            <a href="models.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
+                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">Models</div>
+            </a>
+            <a href="stream.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
+                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">+ Add</div>
+            </a>
+        </div>
 
-        <main>
-            <section class="form-section">
-                <h2>Add New Stream</h2>
+        <div class="stream-layout-container">
+            <div class="control-panel">
+                <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 20px; color: var(--text-main);">Add New Stream</h2>
                 <form id="streamForm">
-                    <div class="form-group">
-                        <label for="streamTitle">Stream Title:</label>
+                    <div style="margin-bottom: 16px;">
+                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Stream Title</label>
                         <input type="text" id="streamTitle" required placeholder="Enter stream title">
                     </div>
-                    <div class="form-group">
-                        <label for="streamUrl">Stream URL:</label>
-                        <input type="url" id="streamUrl" required placeholder="https://www.youtube.com/watch?v=...">
+                    <div style="margin-bottom: 16px;">
+                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Stream URL</label>
+                        <input type="text" id="streamUrl" required placeholder="https://www.youtube.com/watch?v=...">
                     </div>
-                    <div class="form-group">
-                        <label for="streamThumbnail">Thumbnail URL:</label>
-                        <input type="url" id="streamThumbnail" placeholder="https://images.unsplash.com/...">
+                    <div style="margin-bottom: 20px;">
+                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Thumbnail URL (Optional)</label>
+                        <input type="text" id="streamThumbnail" placeholder="Leave blank to auto-detect YouTube thumb">
                     </div>
-                    <div class="form-group">
-                        <label>Associate Models:</label>
-                        <div id="modelsCheckboxGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:10px; max-height:160px; overflow-y:auto; padding:10px; background:rgba(0,0,0,0.4); border:1px solid var(--card-border); border-radius:12px;"></div>
-                    </div>
-                    <button type="submit" class="btn-primary">Save Stream</button>
+                    <button type="submit" class="btn-primary" style="width: 100%; cursor: pointer;">Save & Export JSON</button>
                 </form>
-            </section>
+            </div>
 
-            <section class="list-section">
-                <h2>Existing Streams</h2>
-                <div id="streamsListContainer" class="grid-container"></div>
-            </section>
-        </main>
+            <div>
+                <div class="live-thumb-preview-box" id="previewContainer">
+                    <span style="color: var(--text-muted);">Thumbnail Preview</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="storage.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
-            renderModelCheckboxes();
-            renderStreams();
 
-            document.getElementById('streamForm').addEventListener('submit', function(e) {
+            const urlInput = document.getElementById('streamUrl');
+            const thumbInput = document.getElementById('streamThumbnail');
+            const previewContainer = document.getElementById('previewContainer');
+
+            function updatePreview() {
+                let url = urlInput.value.trim();
+                let thumb = thumbInput.value.trim();
+
+                if (!thumb && url) {
+                    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                        let ytId = '';
+                        if (url.includes('embed/')) ytId = url.split('embed/')[1].split('?')[0];
+                        else if (url.includes('watch?v=')) ytId = url.split('watch?v=')[1].split('&')[0];
+                        else if (url.includes('youtu.be/')) ytId = url.split('youtu.be/')[1].split('?')[0];
+                        if (ytId) thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                    }
+                }
+
+                if (thumb) {
+                    const img = new Image();
+                    img.src = thumb;
+                    img.onload = () => {
+                        if (img.naturalHeight > img.naturalWidth) {
+                            previewContainer.className = 'live-thumb-preview-box portrait-mode';
+                        } else {
+                            previewContainer.className = 'live-thumb-preview-box';
+                        }
+                    };
+                    previewContainer.innerHTML = `<img src="${thumb}" alt="Preview"><div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px; background: linear-gradient(to top, rgba(0,0,0,0.85), transparent); font-weight: 700; font-size: 0.85rem; color: #fff;">Live Preview</div>`;
+                } else {
+                    previewContainer.className = 'live-thumb-preview-box';
+                    previewContainer.innerHTML = `<span style="color: var(--text-muted);">Thumbnail Preview</span>`;
+                }
+            }
+
+            urlInput.addEventListener('input', updatePreview);
+            thumbInput.addEventListener('input', updatePreview);
+
+            document.getElementById('streamForm').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const title = document.getElementById('streamTitle').value.trim();
                 const url = document.getElementById('streamUrl').value.trim();
-                const thumbnail = document.getElementById('streamThumbnail').value.trim();
+                let thumbnail = document.getElementById('streamThumbnail').value.trim();
 
-                const selectedModels = Array.from(document.querySelectorAll('input[name="streamModel"]:checked'))
-                    .map(cb => cb.value);
+                if (!thumbnail && url && (url.includes('youtube.com') || url.includes('youtu.be'))) {
+                    let ytId = '';
+                    if (url.includes('embed/')) ytId = url.split('embed/')[1].split('?')[0];
+                    else if (url.includes('watch?v=')) ytId = url.split('watch?v=')[1].split('&')[0];
+                    else if (url.includes('youtu.be/')) ytId = url.split('youtu.be/')[1].split('?')[0];
+                    if (ytId) thumbnail = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                }
 
                 if (!title || !url) return;
 
@@ -70,61 +112,13 @@
                     title,
                     url,
                     thumbnail: thumbnail || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe',
-                    models: selectedModels
+                    models: []
                 });
 
-                this.reset();
-                renderModelCheckboxes();
-                renderStreams();
+                alert('Stream saved successfully! videos.json has been downloaded.');
+                window.location.href = 'index.html';
             });
         });
-
-        function renderModelCheckboxes() {
-            const container = document.getElementById('modelsCheckboxGrid');
-            const models = StorageDB.getModels();
-            if (!container) return;
-
-            if (models.length === 0) {
-                container.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">No models available.</span>';
-                return;
-            }
-
-            container.innerHTML = models.map(model => `
-                <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-main); cursor:pointer;">
-                    <input type="checkbox" name="streamModel" value="${model.name}" style="accent-color:var(--accent-gold);">
-                    ${model.name}
-                </label>
-            `).join('');
-        }
-
-        function renderStreams() {
-            const container = document.getElementById('streamsListContainer');
-            const streams = StorageDB.getStreams();
-            if (!container) return;
-
-            if (streams.length === 0) {
-                container.innerHTML = '<p>No streams added yet.</p>';
-                return;
-            }
-
-            container.innerHTML = streams.map((stream, index) => `
-                <div class="card">
-                    <img src="${stream.thumbnail}" alt="${stream.title}" style="width:100%; height:140px; object-fit:cover;">
-                    <div class="card-body">
-                        <h3>${stream.title}</h3>
-                        <p><a href="watch.html?index=${index}" style="color:var(--accent-gold); text-decoration:none;">Watch</a></p>
-                        <button onclick="deleteStream(${index})" class="btn-danger">Delete</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function deleteStream(index) {
-            if (confirm('Delete this stream?')) {
-                StorageDB.removeStream(index);
-                renderStreams();
-            }
-        }
     </script>
 </body>
 </html>
