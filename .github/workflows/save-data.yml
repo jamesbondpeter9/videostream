@@ -52,7 +52,7 @@ jobs:
               const newStream = {
                 title: issueTitle.trim(),
                 url: primaryUrl.trim(),
-                thumbnail: secondaryUrl.trim() || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe',
+                thumbnail: secondaryUrl.trim() || '',
                 models: [],
                 createdAt: Date.now()
               };
