@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Models - Video Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Manage Models</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="models.html">Models</a>
+                <a href="stream.html">Streams</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="form-section">
+                <h2>Add New Model</h2>
+                <form id="modelForm">
+                    <div class="form-group">
+                        <label for="modelName">Model Name:</label>
+                        <input type="text" id="modelName" required placeholder="Enter model name">
+                    </div>
+                    <div class="form-group">
+                        <label for="modelThumbnail">Thumbnail Image URL:</label>
+                        <input type="url" id="modelThumbnail" required placeholder="https://images.unsplash.com/...">
+                    </div>
+                    <button type="submit" class="btn-primary">Save Model</button>
+                </form>
+            </section>
+
+            <section class="list-section">
+                <h2>Existing Models</h2>
+                <div id="modelsListContainer" class="grid-container"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="storage.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await StorageDB.initDB();
+            renderModels();
+
+            document.getElementById('modelForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const name = document.getElementById('modelName').value.trim();
+                const thumbnail = document.getElementById('modelThumbnail').value.trim();
+
+                if (!name || !thumbnail) return;
+
+                StorageDB.addModel(name, thumbnail);
+                this.reset();
+                renderModels();
+            });
+        });
+
+        function renderModels() {
+            const container = document.getElementById('modelsListContainer');
+            const models = StorageDB.getModels();
+            if (!container) return;
+
+            if (models.length === 0) {
+                container.innerHTML = '<p>No models added yet.</p>';
+                return;
+            }
+
+            container.innerHTML = models.map((model, index) => `
+                <div class="card">
+                    <img src="${model.thumbnail}" alt="${model.name}" style="width:100%; height:160px; object-fit:cover;">
+                    <div class="card-body">
+                        <h3>${model.name}</h3>
+                        <button onclick="deleteModel(${index})" class="btn-danger">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteModel(index) {
+            if (confirm('Delete this model?')) {
+                StorageDB.removeModel(index);
+                renderModels();
+            }
+        }
+    </script>
+</body>
+</html>
