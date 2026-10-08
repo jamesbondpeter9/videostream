@@ -29,13 +29,14 @@
             color: #ffffff;
             border-color: #ff3232;
         }
+        /* Perfectly fit outer glassmorphic bounds with zero padding gaps */
         .player-wrapper {
             width: 100%;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            padding: 0 !important;
+            overflow: hidden;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
         }
     </style>
 </head>
