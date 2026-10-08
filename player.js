@@ -9,7 +9,6 @@ const VideoPlayer = {
         const url = stream.url || '';
         let embedHtml = '';
 
-        // Check for YouTube URL formats (watch?v= or youtu.be/)
         const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
         const ytMatch = url.match(ytRegex);
 
@@ -23,9 +22,7 @@ const VideoPlayer = {
                             allowfullscreen>
                     </iframe>
                 </div>`;
-        } 
-        // Check for direct video files (MP4, WEBM)
-        else if (url.match(/\.(mp4|webm|ogg)(\?.*)?$/i)) {
+        } else if (url.match(/\.(mp4|webm|ogg)(\?.*)?$/i)) {
             embedHtml = `
                 <div style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 14px; overflow: hidden; border: 1px solid var(--card-border);">
                     <video controls autoplay style="width: 100%; height: 100%; object-fit: contain;">
@@ -33,9 +30,7 @@ const VideoPlayer = {
                         Your browser does not support the video tag.
                     </video>
                 </div>`;
-        } 
-        // Fallback for general streaming embeds or external links via iframe
-        else {
+        } else {
             embedHtml = `
                 <div style="position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 14px; overflow: hidden; border: 1px solid var(--card-border);">
                     <iframe src="${url}" 
