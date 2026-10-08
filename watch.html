@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch Stream - Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .watch-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 16px;
+        }
+        .stream-delete-btn {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+        .stream-delete-btn:hover {
+            background: rgba(255, 50, 50, 0.9);
+            color: #ffffff;
+            border-color: #ff3232;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="site-container" style="max-width: 900px;">
+        <div class="watch-header">
+            <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+                <a href="index.html" class="mondrian-card" style="width: 120px; flex-shrink: 0; text-decoration:none;">
+                    <div style="background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; aspect-ratio:16/9; font-size:0.9rem;">← Home</div>
+                </a>
+                <h1 id="streamTitleHeading" style="font-size: 1.2rem; font-weight: 800; color: #fff; margin: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Loading Stream...</h1>
+            </div>
+            <button id="deleteStreamBtn" class="stream-delete-btn" style="display: none;" title="Delete this stream">
+                <span>×</span> Delete
+            </button>
+        </div>
+
+        <div id="playerContainer" style="width: 100%;"></div>
+        <div id="streamModelsContainer" style="margin-top: 20px; display: flex; gap: 8px; flex-wrap: wrap;"></div>
+    </div>
+
+    <script src="storage.js"></script>
+    <script src="player.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await StorageDB.initDB();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const streamIndex = urlParams.get('index');
+
+            const streams = StorageDB.getStreams();
+            const stream = streams[streamIndex];
+
+            if (!stream) {
+                document.getElementById('streamTitleHeading').textContent = 'Stream Not Found';
+                document.getElementById('playerContainer').innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">The requested stream could not be loaded.</div>`;
+                return;
+            }
+
+            document.getElementById('streamTitleHeading').textContent = stream.title;
+            
+            const deleteBtn = document.getElementById('deleteStreamBtn');
+            deleteBtn.style.display = 'flex';
+            deleteBtn.addEventListener('click', () => {
+                if (confirm(`Are you sure you want to delete "${stream.title}"?`)) {
+                    StorageDB.removeStream(streamIndex);
+                    window.location.href = 'index.html';
+                }
+            });
+
+            VideoPlayer.init('playerContainer', stream);
+
+            if (stream.models && stream.models.length > 0) {
+                const modelsContainer = document.getElementById('streamModelsContainer');
+                stream.models.forEach(modelName => {
+                    const tag = document.createElement('span');
+                    tag.style.cssText = "background: rgba(255,255,255,0.08); border: 1px solid var(--card-border); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600;";
+                    tag.textContent = modelName;
+                    modelsContainer.appendChild(tag);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
