@@ -8,16 +8,15 @@
 </head>
 <body>
     <div class="site-container">
-        <!-- Compact Nav Bar -->
         <div class="nav-bar-compact" style="display: flex; gap: 8px; margin-bottom: 24px;">
-            <a href="index.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
-                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">Home</div>
+            <a href="index.html" class="mondrian-nav-card" style="width: 110px;">
+                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px;">Home</div>
             </a>
-            <a href="models.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
-                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">Models</div>
+            <a href="models.html" class="mondrian-nav-card" style="width: 110px;">
+                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px;">Models</div>
             </a>
-            <a href="stream.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
-                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">+ Add</div>
+            <a href="stream.html" class="mondrian-nav-card" style="width: 110px;">
+                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px;">+ Add</div>
             </a>
         </div>
 
@@ -37,7 +36,7 @@
                         <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Thumbnail URL (Optional)</label>
                         <input type="text" id="streamThumbnail" placeholder="Leave blank to auto-detect YouTube thumb">
                     </div>
-                    <button type="submit" class="btn-primary" style="width: 100%; cursor: pointer;">Save & Export JSON</button>
+                    <button type="submit" class="btn-primary" style="width: 100%;">Save & Export JSON</button>
                 </form>
             </div>
 
@@ -111,7 +110,7 @@
                 StorageDB.addStream({
                     title,
                     url,
-                    thumbnail: thumbnail || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe',
+                    thumbnail: thumbnail || '',
                     models: []
                 });
 
