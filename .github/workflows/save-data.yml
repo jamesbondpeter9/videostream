@@ -1,0 +1,71 @@
+name: Save Issue to videos.json
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  update-json:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Parse Issue and Update videos.json
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const issueBody = context.payload.issue.body || '';
+            const issueTitle = context.payload.issue.title || '';
+            const labels = context.payload.issue.labels.map(l => l.name.toLowerCase());
+            
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            const matches = issueBody.match(urlRegex);
+            const primaryUrl = matches ? matches[0] : '';
+            const secondaryUrl = matches && matches.length > 1 ? matches[1] : '';
+
+            const filePath = 'videos.json';
+            let dbData = { models: [], streams: [], homepage_thumbnails: [] };
+
+            if (fs.existsSync(filePath)) {
+              try {
+                dbData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+              } catch (e) {
+                console.log('Could not parse existing videos.json, starting fresh.');
+              }
+            }
+
+            const isModel = labels.includes('model');
+
+            if (isModel) {
+              const newModel = {
+                name: issueTitle.trim(),
+                thumbnail: primaryUrl.trim(),
+                createdAt: Date.now()
+              };
+              if (!dbData.models) dbData.models = [];
+              dbData.models.push(newModel);
+              console.log(`Added Model: ${newModel.name}`);
+            } else {
+              const newStream = {
+                title: issueTitle.trim(),
+                url: primaryUrl.trim(),
+                thumbnail: secondaryUrl.trim() || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe',
+                models: [],
+                createdAt: Date.now()
+              };
+              if (!dbData.streams) dbData.streams = [];
+              dbData.streams.unshift(newStream);
+              console.log(`Added Stream: ${newStream.title}`);
+            }
+
+            fs.writeFileSync(filePath, JSON.stringify(dbData, null, 4), 'utf8');
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-update videos.json from GitHub Issue [skip ci]"
+          file_pattern: "videos.json"
