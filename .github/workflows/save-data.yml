@@ -48,7 +48,6 @@ jobs:
               };
               if (!dbData.models) dbData.models = [];
               dbData.models.push(newModel);
-              console.log(`Added Model: ${newModel.name}`);
             } else {
               const newStream = {
                 title: issueTitle.trim(),
@@ -59,7 +58,6 @@ jobs:
               };
               if (!dbData.streams) dbData.streams = [];
               dbData.streams.unshift(newStream);
-              console.log(`Added Stream: ${newStream.title}`);
             }
 
             fs.writeFileSync(filePath, JSON.stringify(dbData, null, 4), 'utf8');
