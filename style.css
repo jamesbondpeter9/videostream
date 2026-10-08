@@ -56,7 +56,6 @@ header nav a {
     text-decoration: none;
     font-weight: 600;
     font-size: 0.9rem;
-    transition: color 0.2s;
 }
 
 header nav a:hover {
@@ -139,11 +138,6 @@ input[type="text"], input[type="url"] {
     outline: none;
 }
 
-input[type="text"]:focus, input[type="url"]:focus {
-    border-color: #ffffff;
-    box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
-}
-
 .grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -174,12 +168,6 @@ input[type="text"]:focus, input[type="url"]:focus {
     border-radius: 12px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.btn-primary:hover {
-    background: #e2e8f0;
-    transform: translateY(-1px);
 }
 
 .btn-danger {
@@ -190,9 +178,4 @@ input[type="text"]:focus, input[type="url"]:focus {
     border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
-}
-
-.btn-danger:hover {
-    background: rgba(255, 50, 50, 0.8);
-    color: #ffffff;
 }
