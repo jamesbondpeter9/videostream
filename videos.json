@@ -1,5 +1,19 @@
 {
-    "models": [],
-    "streams": [],
+    "models": [
+        {
+            "name": "A",
+            "thumbnail": "https://cdni.pornpics.com/1280/5/223/81690353/81690353_007_8402.jpg",
+            "createdAt": 1791476369602
+        }
+    ],
+    "streams": [
+        {
+            "title": "A",
+            "url": "https://s39.bigcdn.cc/pubs/6ac7bca0bd4492.53632792/1080.mp4",
+            "thumbnail": "https://cdni.pornpics.com/1280/5/223/81690353/81690353_007_8402.jpg",
+            "models": [],
+            "createdAt": 1791476350191
+        }
+    ],
     "homepage_thumbnails": []
 }
