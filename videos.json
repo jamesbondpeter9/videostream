@@ -1,24 +1,5 @@
 {
-    "models": [
-        {
-            "name": "Jane Doe",
-            "thumbnail": "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
-            "createdAt": 1710000000000
-        },
-        {
-            "name": "Alex Smith",
-            "thumbnail": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
-            "createdAt": 1710000001000
-        }
-    ],
-    "streams": [
-        {
-            "title": "Sample Stream Showcase 1",
-            "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-            "thumbnail": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe",
-            "models": ["Jane Doe"],
-            "createdAt": 1710000002000
-        }
-    ],
+    "models": [],
+    "streams": [],
     "homepage_thumbnails": []
 }
