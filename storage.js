@@ -56,7 +56,7 @@ const StorageDB = {
             title: streamData.title || 'Untitled Stream',
             url: streamData.url || '',
             thumbnail: streamData.thumbnail || '',
-            models: streamData.models || [],
+            models: streamData.models || [], // Supports model name tags array
             createdAt: Date.now()
         };
         streams.unshift(newStream);
