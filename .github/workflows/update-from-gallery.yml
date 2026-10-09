@@ -5,6 +5,11 @@ on:
     paths:
       - 'video-gallery.html'
 
+# Prevents mid-flight task cancellations and queues updates safely
+concurrency:
+  group: gallery-sync-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   update-json-from-gallery:
     runs-on: ubuntu-latest
@@ -18,7 +23,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Extract JSON and update videos.json
         run: |
