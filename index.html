@@ -6,7 +6,7 @@
     <title>Video Portal - Home</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Slightly increased gap for top navigation bar */
+        /* Increased gap for top navigation bar */
         .nav-bar-compact {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -15,18 +15,23 @@
         }
         @media(max-width: 900px) { .nav-bar-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
-        /* Compact Grid Sizing for Homepage Thumbnails */
+        /* Homepage Mosaic Grid with 2px gap and adjusted row heights */
         .home-grid {
             display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
-            grid-auto-rows: 190px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-auto-rows: 260px;
             grid-auto-flow: dense;
-            gap: 12px;
+            gap: 2px;
             align-items: stretch;
         }
-        @media(max-width: 1400px) { .home-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-        @media(max-width: 1000px) { .home-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-        @media(max-width: 700px) { .home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media(max-width: 1400px) { .home-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media(max-width: 900px) { .home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media(max-width: 500px) { .home-grid { grid-template-columns: 1fr; } }
+
+        /* Mondrian Puzzle Sizing Shapes */
+        .mondrian-card.landscape { grid-column: span 2; grid-row: span 1; }
+        .mondrian-card.portrait { grid-column: span 1; grid-row: span 2; }
+        .mondrian-card.square { grid-column: span 1; grid-row: span 1; }
     </style>
 </head>
 <body>
@@ -47,7 +52,7 @@
             const streams = StorageDB.getStreams();
             const grid = document.getElementById('streamsGrid');
             if (streams.length === 0) {
-                grid.innerHTML = `<div style="grid-column: span 5; text-align: center; color: var(--text-muted); padding: 60px;">No streams found. Click "+" to create your first stream!</div>`;
+                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No streams found. Click "+" to create your first stream!</div>`;
                 return;
             }
             grid.innerHTML = '';
@@ -56,14 +61,14 @@
                 card.href = stream.url;
                 card.target = '_blank';
                 
-                // Varied Mondrian puzzle sizing pattern for smaller compact grid
-                const patterns = ['square', 'landscape', 'square', 'portrait'];
+                // Varied Mondrian puzzle sizing pattern
+                const patterns = ['landscape', 'portrait', 'square', 'landscape'];
                 card.className = `mondrian-card ${patterns[index % patterns.length]}`;
 
                 card.innerHTML = `
                     <div class="mondrian-thumb">
-                        ${stream.thumbnail ? `<img src="${stream.thumbnail}" alt="${stream.title}">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Thumbnail</div>'}
-                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 10px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.8rem; color: #fff;">${stream.title}</div>
+                        ${stream.thumbnail ? `<img src="${stream.thumbnail}" alt="${stream.title}" style="object-fit:cover; width:100%; height:100%;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Thumbnail</div>'}
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.85rem; color: #fff;">${stream.title}</div>
                     </div>`;
                 grid.appendChild(card);
             });
