@@ -7,24 +7,17 @@ const StorageDB = {
 
     async initDB() {
         try {
-            // Fetch live data directly from the repository's videos.json file
             const response = await fetch('videos.json?' + new Date().getTime());
             if (response.ok) {
                 const data = await response.json();
-                
-                if (data.models) {
-                    localStorage.setItem(this.MODELS_KEY, JSON.stringify(data.models));
-                }
-                if (data.streams) {
-                    localStorage.setItem(this.STREAMS_KEY, JSON.stringify(data.streams));
-                }
+                if (data.models) localStorage.setItem(this.MODELS_KEY, JSON.stringify(data.models));
+                if (data.streams) localStorage.setItem(this.STREAMS_KEY, JSON.stringify(data.streams));
                 return;
             }
         } catch (e) {
             console.error('Could not load videos.json from repository, checking localStorage fallback.', e);
         }
 
-        // Fallback to localStorage if fetch fails
         if (!localStorage.getItem(this.MODELS_KEY)) localStorage.setItem(this.MODELS_KEY, JSON.stringify([]));
         if (!localStorage.getItem(this.STREAMS_KEY)) localStorage.setItem(this.STREAMS_KEY, JSON.stringify([]));
     },
@@ -35,7 +28,7 @@ const StorageDB = {
         const token = localStorage.getItem('ghToken');
 
         if (!owner || !repo || !token) {
-            console.warn("GitHub credentials (ghOwner, ghRepo, ghToken) not set in localStorage. Changes saved locally only.");
+            console.warn("GitHub credentials (ghOwner, ghRepo, ghToken) not set in localStorage.");
             return;
         }
 
@@ -45,8 +38,8 @@ const StorageDB = {
             homepage_thumbnails: []
         };
         const newJsonString = JSON.stringify(fullData, null, 4);
-
         const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/video-gallery.html`;
+
         try {
             const getRes = await fetch(apiUrl, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -55,8 +48,6 @@ const StorageDB = {
             const fileData = await getRes.json();
 
             let currentHtml = decodeURIComponent(escape(atob(fileData.content)));
-            
-            // Replace the embedded JSON database block inside video-gallery.html
             const updatedHtml = currentHtml.replace(
                 /<script type="application\/json" id="embedded-database">[\s\S]*?<\/script>/,
                 `<script type="application/json" id="embedded-database">\n    ${newJsonString}\n    </script>`
