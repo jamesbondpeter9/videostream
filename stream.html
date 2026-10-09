@@ -6,6 +6,17 @@
     <title>Add Stream - Portal</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        /* Top Navigation Bar with 2px gap matching the rest of the portal */
+        .nav-bar-compact {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 2px;
+            margin-bottom: 24px;
+            max-width: 1650px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
         .model-tags-container {
             display: flex;
             flex-wrap: wrap;
@@ -38,12 +49,15 @@
 </head>
 <body>
     <div class="site-container">
-        <div class="stream-layout-container" style="margin-top: 40px;">
+        <!-- Top Nav Bar with Home and + cards side-by-side with 2px gap -->
+        <div class="nav-bar-compact">
+            <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Home</div></a>
+            <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background:#fff; color:#000; font-size: 1.4rem; font-weight: 900;">+</div></a>
+        </div>
+
+        <div class="stream-layout-container">
             <div class="control-panel">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 style="font-size: 1.25rem; font-weight: 800;">Add New Stream</h2>
-                    <a href="index.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 700;">&larr; Back to Home</a>
-                </div>
+                <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 20px;">Add New Stream</h2>
                 <form id="streamForm">
                     <div style="margin-bottom: 16px;">
                         <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Stream Title</label>
