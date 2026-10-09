@@ -5,33 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Portal - Home</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .nav-bar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; margin-bottom: 24px; }
+        @media(max-width: 900px) { .nav-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media(max-width: 500px) { .nav-bar { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
     <div class="site-container">
-        <div class="nav-bar-compact" style="display: flex; gap: 8px; margin-bottom: 24px;">
+        <!-- Top Navigation with precise Mondrian sizing -->
+        <div class="nav-bar">
             <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background: #fff; color: #000;">Home</div></a>
             <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Models</div></a>
             <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box">+ Add</div></a>
             <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Gallery Hub</div></a>
         </div>
+
+        <!-- Mondrian Puzzle Grid with alternating landscape and portrait layouts -->
         <div class="mondrian-grid" id="streamsGrid"></div>
     </div>
+
     <script src="storage.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
             const streams = StorageDB.getStreams();
             const grid = document.getElementById('streamsGrid');
+
             if (streams.length === 0) {
                 grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No streams found. Click "+ Add" to create your first stream!</div>`;
                 return;
             }
+
             grid.innerHTML = '';
             streams.forEach((stream, index) => {
                 const card = document.createElement('a');
                 card.href = stream.url;
                 card.target = '_blank';
-                card.className = index % 3 === 0 ? 'mondrian-card portrait' : 'mondrian-card landscape';
+                
+                // Classic Mondrian pattern distribution (alternating landscape, portrait, and wide spans)
+                if (index % 5 === 0) {
+                    card.className = 'mondrian-card landscape';
+                } else if (index % 3 === 0) {
+                    card.className = 'mondrian-card portrait';
+                } else {
+                    card.className = 'mondrian-card landscape';
+                }
+
                 card.innerHTML = `
                     <div class="mondrian-thumb">
                         ${stream.thumbnail ? `<img src="${stream.thumbnail}" alt="${stream.title}">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Thumbnail</div>'}
