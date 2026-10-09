@@ -47,16 +47,22 @@
         @media(max-width: 900px) { .tag-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media(max-width: 500px) { .tag-grid { grid-template-columns: 1fr; } }
 
-        .mondrian-card.landscape { grid-column: span 2; grid-row: span 3; }
-        .mondrian-card.portrait { grid-column: span 1; grid-row: span 2; }
+        /* Matching exact index.html landscape and portrait card dimensions */
+        .mondrian-card.landscape { 
+            grid-column: span 2; 
+            grid-row: span 3; 
+        }
+
+        .mondrian-card.portrait { 
+            grid-column: span 1; 
+            grid-row: span 2; 
+        }
 
         .mondrian-thumb {
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            border-radius: 20px;
-            overflow: hidden;
         }
     </style>
 </head>
@@ -103,6 +109,7 @@
                 const globalIndex = allStreams.findIndex(s => s.url === stream.url && s.title === stream.title);
                 card.href = `watch.html?index=${globalIndex}`;
                 
+                // Alternating pattern between landscape and portrait sizes matching index.html
                 const patterns = ['landscape', 'portrait', 'portrait', 'landscape'];
                 card.className = `mondrian-card ${patterns[index % patterns.length]}`;
 
