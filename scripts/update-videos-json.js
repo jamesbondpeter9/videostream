@@ -12,7 +12,6 @@ if (fs.existsSync(filePath)) {
     }
 }
 
-// Ensure required keys exist
 if (!dbData.models) dbData.models = [];
 if (!dbData.streams) dbData.streams = [];
 if (!dbData.homepage_thumbnails) dbData.homepage_thumbnails = [];
