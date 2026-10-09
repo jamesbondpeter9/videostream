@@ -8,53 +8,34 @@
 </head>
 <body>
     <div class="site-container">
-        <!-- Navigation Bar -->
         <div class="nav-bar-compact" style="display: flex; gap: 8px; margin-bottom: 24px;">
-            <a href="index.html" class="mondrian-nav-card">
-                <div class="mondrian-nav-box" style="background: #fff; color: #000;">Home</div>
-            </a>
-            <a href="models.html" class="mondrian-nav-card">
-                <div class="mondrian-nav-box">Models</div>
-            </a>
-            <a href="stream.html" class="mondrian-nav-card">
-                <div class="mondrian-nav-box">+ Add</div>
-            </a>
-            <a href="video-gallery.html" class="mondrian-nav-card">
-                <div class="mondrian-nav-box">Gallery Hub</div>
-            </a>
+            <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background: #fff; color: #000;">Home</div></a>
+            <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Models</div></a>
+            <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box">+ Add</div></a>
+            <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Gallery Hub</div></a>
         </div>
-
-        <div class="mondrian-grid" id="streamsGrid">
-            <!-- Dynamically populated streams -->
-        </div>
+        <div class="mondrian-grid" id="streamsGrid"></div>
     </div>
-
     <script src="storage.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
             const streams = StorageDB.getStreams();
             const grid = document.getElementById('streamsGrid');
-
             if (streams.length === 0) {
                 grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No streams found. Click "+ Add" to create your first stream!</div>`;
                 return;
             }
-
             grid.innerHTML = '';
             streams.forEach((stream, index) => {
                 const card = document.createElement('a');
                 card.href = `watch.html?index=${index}`;
                 card.className = 'mondrian-card landscape';
-
                 card.innerHTML = `
                     <div class="mondrian-thumb">
                         ${stream.thumbnail ? `<img src="${stream.thumbnail}" alt="${stream.title}">` : '<span>No Thumbnail</span>'}
-                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 14px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.9rem; color: #fff;">
-                            ${stream.title}
-                        </div>
-                    </div>
-                `;
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 14px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.9rem; color: #fff;">${stream.title}</div>
+                    </div>`;
                 grid.appendChild(card);
             });
         });
