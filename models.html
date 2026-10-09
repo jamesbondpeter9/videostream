@@ -10,13 +10,13 @@
         .filter-btn { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 0.8rem; transition: all 0.2s ease; }
         .filter-btn:hover, .filter-btn.active { background: #fff; color: #000; border-color: #fff; }
         
-        /* Reduced Gap & Tight Mosaic Grid for Models Directory */
+        /* Increased Length & Very Tiny 2px Gap */
         .models-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            grid-auto-rows: 200px;
+            grid-auto-rows: 280px;
             grid-auto-flow: dense;
-            gap: 6px;
+            gap: 2px;
             align-items: stretch;
         }
         @media(max-width: 1400px) { .models-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -30,23 +30,23 @@
 
         /* Tiny + Symbol on Top-Left Corner to Update Thumbnail */
         .update-thumb-btn { 
-            position: absolute; top: 8px; left: 8px; 
-            background: rgba(0,0,0,0.75); border: 1px solid rgba(255,255,255,0.3); 
-            color: #fff; width: 24px; height: 24px; border-radius: 50%; 
+            position: absolute; top: 10px; left: 10px; 
+            background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.3); 
+            color: #fff; width: 26px; height: 26px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 0.85rem; font-weight: bold; cursor: pointer; 
-            opacity: 0; transition: opacity 0.2s ease; z-index: 10; 
+            font-size: 0.9rem; font-weight: bold; cursor: pointer; 
+            opacity: 0; transition: opacity 0.2s ease; z-index: 20; 
         }
         .mondrian-thumb:hover .update-thumb-btn { opacity: 1; }
 
         /* Tiny Delete Symbol on Top-Right Corner */
         .delete-btn { 
-            position: absolute; top: 8px; right: 8px; 
-            background: rgba(0,0,0,0.75); border: 1px solid rgba(255,255,255,0.3); 
-            color: #ff4d4d; width: 24px; height: 24px; border-radius: 50%; 
+            position: absolute; top: 10px; right: 10px; 
+            background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.3); 
+            color: #ff4d4d; width: 26px; height: 26px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 0.75rem; font-weight: bold; cursor: pointer; 
-            opacity: 0; transition: opacity 0.2s ease; z-index: 10; 
+            font-size: 0.9rem; font-weight: bold; cursor: pointer; 
+            opacity: 0; transition: opacity 0.2s ease; z-index: 20; 
         }
         .mondrian-thumb:hover .delete-btn { opacity: 1; }
     </style>
@@ -131,13 +131,11 @@
                 const thumb = document.getElementById('modelThumb').value.trim();
                 if (!name || !thumb) return;
 
-                // Pre-load image to determine auto-shape orientation
                 const img = new Image();
                 img.src = thumb;
                 img.onload = () => {
                     const shape = img.height > img.width ? 'portrait' : (img.width > img.height ? 'landscape' : 'square');
                     StorageDB.addModel(name, thumb);
-                    // Tag orientation onto the newly added model
                     const models = StorageDB.getModels();
                     if(models.length > 0) {
                         models[models.length - 1].shape = shape;
@@ -201,7 +199,10 @@
             const models = StorageDB.getModels();
             const grid = document.getElementById('modelsGrid');
             
-            const filtered = models.filter(m => {
+            // Map original absolute indexes before filtering so actions target the correct model item
+            const modelsWithIndex = models.map((m, idx) => ({ ...m, originalIndex: idx }));
+            
+            const filtered = modelsWithIndex.filter(m => {
                 if (currentLetterFilter === 'ALL') return true;
                 return m.name.toUpperCase().startsWith(currentLetterFilter);
             });
@@ -213,19 +214,16 @@
 
             grid.innerHTML = '';
             filtered.forEach((model) => {
-                const originalIndex = models.findIndex(m => m.createdAt === model.createdAt);
                 const card = document.createElement('div');
-                
-                // Use stored auto-shape or fallback to pattern
-                const shape = model.shape || (originalIndex % 2 === 0 ? 'portrait' : 'landscape');
+                const shape = model.shape || (model.originalIndex % 2 === 0 ? 'portrait' : 'landscape');
                 card.className = `mondrian-card ${shape}`;
 
                 card.innerHTML = `
                     <div class="mondrian-thumb">
-                        <button class="update-thumb-btn" onclick="openUpdateThumbModal(${originalIndex})" title="Update thumbnail">+</button>
-                        <button class="delete-btn" onclick="openDeleteModal(${originalIndex})" title="Delete model">&times;</button>
+                        <button type="button" class="update-thumb-btn" onclick="openUpdateThumbModal(${model.originalIndex})" title="Update thumbnail">+</button>
+                        <button type="button" class="delete-btn" onclick="openDeleteModal(${model.originalIndex})" title="Delete model">&times;</button>
                         ${model.thumbnail ? `<img src="${model.thumbnail}" alt="${model.name}">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Photo</div>'}
-                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 10px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.8rem; color: #fff;">${model.name}</div>
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.85rem; color: #fff;">${model.name}</div>
                     </div>`;
                 grid.appendChild(card);
             });
