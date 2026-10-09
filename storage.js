@@ -6,7 +6,7 @@ const StorageDB = {
     MODELS_KEY: 'video_portal_models_db',
 
     async initDB() {
-        // 1. Ensure local storage keys exist immediately
+        // Ensure local storage keys always exist
         if (!localStorage.getItem(this.MODELS_KEY)) {
             localStorage.setItem(this.MODELS_KEY, JSON.stringify([]));
         }
@@ -14,28 +14,24 @@ const StorageDB = {
             localStorage.setItem(this.STREAMS_KEY, JSON.stringify([]));
         }
 
-        // 2. Attempt to fetch live videos.json in the background to sync latest remote updates
+        // Try to sync down remote videos.json if local is empty
         try {
             const response = await fetch('videos.json?' + new Date().getTime());
             if (response.ok) {
                 const data = await response.json();
                 
-                // If remote has data and local is empty (or to keep them aligned), merge or update
-                if (data.models && data.models.length > 0) {
-                    const localModels = JSON.parse(localStorage.getItem(this.MODELS_KEY) || '[]');
-                    if (localModels.length === 0) {
-                        localStorage.setItem(this.MODELS_KEY, JSON.stringify(data.models));
-                    }
+                const localModels = JSON.parse(localStorage.getItem(this.MODELS_KEY) || '[]');
+                if (data.models && data.models.length > 0 && localModels.length === 0) {
+                    localStorage.setItem(this.MODELS_KEY, JSON.stringify(data.models));
                 }
-                if (data.streams && data.streams.length > 0) {
-                    const localStreams = JSON.parse(localStorage.getItem(this.STREAMS_KEY) || '[]');
-                    if (localStreams.length === 0) {
-                        localStorage.setItem(this.STREAMS_KEY, JSON.stringify(data.streams));
-                    }
+
+                const localStreams = JSON.parse(localStorage.getItem(this.STREAMS_KEY) || '[]');
+                if (data.streams && data.streams.length > 0 && localStreams.length === 0) {
+                    localStorage.setItem(this.STREAMS_KEY, JSON.stringify(data.streams));
                 }
             }
         } catch (e) {
-            console.log('Using local storage database cache (offline or remote fetch skipped).');
+            console.log('Running on local storage cache.');
         }
     },
 
@@ -45,7 +41,7 @@ const StorageDB = {
         const token = localStorage.getItem('ghToken');
 
         if (!owner || !repo || !token) {
-            console.warn("GitHub credentials not found in localStorage. Saved locally only.");
+            console.warn("GitHub credentials not configured in localStorage. Data saved locally.");
             return;
         }
 
@@ -86,7 +82,7 @@ const StorageDB = {
             if (!putRes.ok) throw new Error("Failed to commit to GitHub.");
             console.log("Successfully synced database updates to video-gallery.html on GitHub!");
         } catch (err) {
-            console.error("GitHub API sync warning:", err);
+            console.error("GitHub API sync error:", err);
         }
     },
 
@@ -100,7 +96,7 @@ const StorageDB = {
     },
 
     saveStreams(streams, triggerSync = true) {
-        localStorage.setItem(this.STREAMS_KEY, JSON.stringify(streams, null, 4));
+        localStorage.setItem(this.STREAMS_KEY, JSON.stringify(streams));
         if (triggerSync) this.syncToGitHub("Update streams database");
     },
 
@@ -136,7 +132,7 @@ const StorageDB = {
     },
 
     saveModels(models, triggerSync = true) {
-        localStorage.setItem(this.MODELS_KEY, JSON.stringify(models, null, 4));
+        localStorage.setItem(this.MODELS_KEY, JSON.stringify(models));
         if (triggerSync) this.syncToGitHub("Update models database");
     },
 
