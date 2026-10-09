@@ -50,9 +50,9 @@ const StorageDB = {
     saveModels(models) {
         localStorage.setItem(this.MODELS_KEY, JSON.stringify(models));
     },
-    addModel(name, thumbnail) {
+    addModel(name, thumbnail, shape = 'square') {
         const models = this.getModels();
-        const newModel = { name: name.trim(), thumbnail: thumbnail.trim(), createdAt: Date.now() };
+        const newModel = { name: name.trim(), thumbnail: thumbnail.trim(), shape, createdAt: Date.now() };
         models.push(newModel);
         this.saveModels(models);
         return newModel;
