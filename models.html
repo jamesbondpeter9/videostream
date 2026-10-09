@@ -14,38 +14,28 @@
             <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box">+ Add</div></a>
             <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Gallery Hub</div></a>
         </div>
-
         <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 20px;">Models Directory</h1>
-        
-        <div class="mondrian-grid" id="modelsGrid">
-            <!-- Dynamically populated models -->
-        </div>
+        <div class="mondrian-grid" id="modelsGrid"></div>
     </div>
-
     <script src="storage.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
             const models = StorageDB.getModels();
             const grid = document.getElementById('modelsGrid');
-
             if (models.length === 0) {
                 grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No models found in directory.</div>`;
                 return;
             }
-
             grid.innerHTML = '';
-            models.forEach((model, index) => {
+            models.forEach((model) => {
                 const card = document.createElement('div');
                 card.className = 'mondrian-card portrait';
                 card.innerHTML = `
                     <div class="mondrian-thumb portrait-mode">
                         ${model.thumbnail ? `<img src="${model.thumbnail}" alt="${model.name}">` : '<span>No Photo</span>'}
-                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 14px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.9rem; color: #fff;">
-                            ${model.name}
-                        </div>
-                    </div>
-                `;
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 14px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.9rem; color: #fff;">${model.name}</div>
+                    </div>`;
                 grid.appendChild(card);
             });
         });
