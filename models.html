@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Models Directory - Portal</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .filter-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; justify-content: center; }
+        .filter-btn { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 0.8rem; transition: all 0.2s ease; }
+        .filter-btn:hover, .filter-btn.active { background: #fff; color: #000; border-color: #fff; }
+        .delete-btn { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); color: #ff4d4d; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; cursor: pointer; opacity: 0; transition: opacity 0.2s ease; z-index: 10; }
+        .mondrian-thumb:hover .delete-btn { opacity: 1; }
+    </style>
 </head>
 <body>
     <div class="site-container">
@@ -20,9 +27,12 @@
             <button onclick="openAddModelModal()" class="btn-primary" style="padding: 10px 18px; font-size: 0.85rem;">+ Add Model</button>
         </div>
 
+        <!-- Letter Filter Bar -->
+        <div class="filter-bar" id="filterBar"></div>
+
         <div class="mondrian-grid" id="modelsGrid"></div>
 
-        <!-- Simple Add Model Modal Form -->
+        <!-- Add Model Modal -->
         <div id="modelModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; z-index:100;">
             <div class="control-panel" style="width: 100%; max-width: 400px; position:relative;">
                 <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 16px;">Add New Model</h3>
@@ -45,8 +55,11 @@
     </div>
     <script src="storage.js"></script>
     <script>
+        let currentLetterFilter = 'ALL';
+
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
+            buildFilterBar();
             renderModels();
 
             document.getElementById('modelForm').addEventListener('submit', (e) => {
@@ -60,24 +73,58 @@
             });
         });
 
+        function buildFilterBar() {
+            const filterBar = document.getElementById('filterBar');
+            const letters = ['ALL', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'];
+            filterBar.innerHTML = '';
+            letters.forEach(letter => {
+                const btn = document.createElement('button');
+                btn.className = `filter-btn ${letter === 'ALL' ? 'active' : ''}`;
+                btn.textContent = letter;
+                btn.onclick = () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentLetterFilter = letter;
+                    renderModels();
+                };
+                filterBar.appendChild(btn);
+            });
+        }
+
         function renderModels() {
             const models = StorageDB.getModels();
             const grid = document.getElementById('modelsGrid');
-            if (models.length === 0) {
-                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No models found in directory. Click "+ Add Model" to add one!</div>`;
+            
+            const filtered = models.filter(m => {
+                if (currentLetterFilter === 'ALL') return true;
+                return m.name.toUpperCase().startsWith(currentLetterFilter);
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No models found.</div>`;
                 return;
             }
+
             grid.innerHTML = '';
-            models.forEach((model) => {
+            filtered.forEach((model) => {
+                const originalIndex = models.findIndex(m => m.createdAt === model.createdAt);
                 const card = document.createElement('div');
-                card.className = 'mondrian-card portrait';
+                card.className = originalIndex % 3 === 0 ? 'mondrian-card landscape' : 'mondrian-card portrait';
                 card.innerHTML = `
                     <div class="mondrian-thumb">
-                        ${model.thumbnail ? `<img src="${model.thumbnail}" alt="${model.name}">` : '<span>No Photo</span>'}
+                        <button class="delete-btn" onclick="deleteModel(${originalIndex})" title="Delete model">&times;</button>
+                        ${model.thumbnail ? `<img src="${model.thumbnail}" alt="${model.name}">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Photo</div>'}
                         <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 14px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.9rem; color: #fff;">${model.name}</div>
                     </div>`;
                 grid.appendChild(card);
             });
+        }
+
+        function deleteModel(index) {
+            if (confirm('Are you sure you want to delete this model?')) {
+                StorageDB.removeModel(index);
+                renderModels();
+            }
         }
 
         function openAddModelModal() { document.getElementById('modelModal').style.display = 'flex'; }
