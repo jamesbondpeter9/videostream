@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Gallery Manager - Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .gallery-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+        @media(max-width: 900px) {
+            .gallery-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .config-box {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(40px);
+            margin-bottom: 24px;
+            box-shadow: 0 35px 70px rgba(0,0,0,0.95), var(--neon-glow);
+        }
+    </style>
+</head>
+<body>
+    <div class="site-container">
+        <!-- Compact Nav Bar matching your portal -->
+        <div class="nav-bar-compact" style="display: flex; gap: 8px; margin-bottom: 24px;">
+            <a href="index.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
+                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">Home</div>
+            </a>
+            <a href="models.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
+                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">Models</div>
+            </a>
+            <a href="stream.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
+                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">+ Add</div>
+            </a>
+            <a href="video-gallery.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
+                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: #fff; border: 1px solid #fff; color: #000; display: flex; align-items: center; justify-content: center; font-weight: 700;">Gallery Hub</div>
+            </a>
+        </div>
+
+        <header style="margin-bottom: 24px;">
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">Video Gallery Manager</h1>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Automated sync dashboard connected directly to your repository database.</p>
+        </header>
+
+        <div class="gallery-layout">
+            <!-- GitHub API Settings Card -->
+            <div class="config-box">
+                <h2 style="font-size: 1rem; font-weight: 700; margin-bottom: 14px; color: var(--text-main);">GitHub Credentials</h2>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div>
+                        <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; font-weight:600;">GitHub Username / Owner</label>
+                        <input type="text" id="ghOwner" placeholder="e.g. username">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; font-weight:600;">Repository Name</label>
+                        <input type="text" id="ghRepo" placeholder="e.g. video-portal">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; font-weight:600;">Personal Access Token (repo scope)</label>
+                        <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx">
+                    </div>
+                    <button onclick="saveSettings()" class="btn-primary" style="margin-top: 4px; font-size: 0.85rem; padding: 10px;">Save Credentials Locally</button>
+                </div>
+            </div>
+
+            <!-- Quick Add Form Card -->
+            <div class="control-panel">
+                <h2 style="font-size: 1rem; font-weight: 700; margin-bottom: 14px; color: var(--text-main);">Quick Add Item</h2>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div>
+                        <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; font-weight:600;">Entry Type</label>
+                        <select id="entryType" style="width: 100%; background: rgba(0, 0, 0, 0.75); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px 16px; color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; outline: none;">
+                            <option value="stream">Stream</option>
+                            <option value="model">Model</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; font-weight:600;">Title / Name</label>
+                        <input type="text" id="entryTitle" placeholder="e.g. Summer Vibes or Alice">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; font-weight:600;">Stream URL / Embed Code</label>
+                        <input type="text" id="entryUrl" placeholder="https://www.youtube.com/watch?v=...">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; font-weight:600;">Thumbnail URL</label>
+                        <input type="text" id="entryThumb" placeholder="https://... (leave blank to auto-detect)">
+                    </div>
+                    <button onclick="pushToRepo()" class="btn-primary" style="margin-top: 4px; background: #fff; color: #000; font-weight: 800;">Push Directly to Repository</button>
+                    <p id="statusMsg" style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- EMBEDDED JSON SOURCE OF TRUTH -->
+        <script type="application/json" id="embedded-database">
+        {
+            "models": [],
+            "streams": [],
+            "homepage_thumbnails": []
+        }
+        </script>
+    </div>
+
+    <script src="storage.js"></script>
+    <script>
+        window.onload = async function() {
+            if(localStorage.getItem('ghOwner')) document.getElementById('ghOwner').value = localStorage.getItem('ghOwner');
+            if(localStorage.getItem('ghRepo')) document.getElementById('ghRepo').value = localStorage.getItem('ghRepo');
+            if(localStorage.getItem('ghToken')) document.getElementById('ghToken').value = localStorage.getItem('ghToken');
+
+            await StorageDB.initDB();
+            const data = {
+                models: StorageDB.getModels(),
+                streams: StorageDB.getStreams(),
+                homepage_thumbnails: []
+            };
+            document.getElementById('embedded-database').textContent = JSON.stringify(data, null, 4);
+        }
+
+        function saveSettings() {
+            localStorage.setItem('ghOwner', document.getElementById('ghOwner').value.trim());
+            localStorage.setItem('ghRepo', document.getElementById('ghRepo').value.trim());
+            localStorage.setItem('ghToken', document.getElementById('ghToken').value.trim());
+            alert('Credentials saved to browser storage!');
+        }
+
+        async function pushToRepo() {
+            const owner = document.getElementById('ghOwner').value.trim();
+            const repo = document.getElementById('ghRepo').value.trim();
+            const token = document.getElementById('ghToken').value.trim();
+            const status = document.getElementById('statusMsg');
+
+            if (!owner || !repo || !token) {
+                alert("Please fill in your GitHub Owner, Repo, and Token first.");
+                return;
+            }
+
+            status.textContent = "Updating database schema...";
+            const type = document.getElementById('entryType').value;
+            const title = document.getElementById('entryTitle').value.trim();
+            const url = document.getElementById('entryUrl').value.trim();
+            let thumb = document.getElementById('entryThumb').value.trim();
+            const now = new Date().toISOString();
+
+            if (!title) {
+                alert("Title / Name is required.");
+                status.textContent = "";
+                return;
+            }
+
+            if (!thumb && url && (url.includes('youtube.com') || url.includes('youtu.be'))) {
+                let ytId = '';
+                if (url.includes('embed/')) ytId = url.split('embed/')[1].split('?')[0];
+                else if (url.includes('watch?v=')) ytId = url.split('watch?v=')[1].split('&')[0];
+                else if (url.includes('youtu.be/')) ytId = url.split('youtu.be/')[1].split('?')[0];
+                if (ytId) thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+            }
+
+            let db = JSON.parse(document.getElementById('embedded-database').textContent);
+
+            if (type === 'model') {
+                db.models.push({ name: title, thumbnail: thumb, createdAt: now });
+            } else {
+                db.streams.unshift({ title: title, url: url, thumbnail: thumb, models: [], createdAt: now });
+            }
+
+            const newJsonString = JSON.stringify(db, null, 4);
+            document.getElementById('embedded-database').textContent = newJsonString;
+
+            status.textContent = "Connecting to GitHub API...";
+            const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/video-gallery.html`;
+
+            try {
+                const getRes = await fetch(apiUrl, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!getRes.ok) throw new Error("Failed to fetch video-gallery.html from repo. Check your credentials.");
+                const fileData = await getRes.json();
+
+                let currentHtml = decodeURIComponent(escape(atob(fileData.content)));
+                const updatedHtml = currentHtml.replace(
+                    /<script type="application\/json" id="embedded-database">[\s\S]*?<\/script>/,
+                    `<script type="application/json" id="embedded-database">\n    ${newJsonString}\n    </script>`
+                );
+
+                status.textContent = "Pushing update to repository...";
+                const putRes = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Auto-add new ${type}: ${title}`,
+                        content: btoa(unescape(encodeURIComponent(updatedHtml))),
+                        sha: fileData.sha
+                    })
+                });
+
+                if (!putRes.ok) throw new Error("Failed to commit changes to GitHub.");
+
+                status.textContent = "Success! Repository updated. Your GitHub Action is now syncing videos.json!";
+                status.style.color = "#34d399";
+            } catch (err) {
+                status.textContent = "Error: " + err.message;
+                status.style.color = "#f87171";
+            }
+        }
+    </script>
+</body>
+</html>
