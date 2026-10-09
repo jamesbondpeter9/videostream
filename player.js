@@ -9,7 +9,6 @@ const VideoPlayer = {
         const rawInput = (stream.url || '').trim();
         let embedHtml = '';
 
-        // Common loading overlay for smooth feedback
         const loadingOverlay = `
             <div id="playerLoader" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.9); backdrop-filter: blur(20px); z-index: 10; transition: opacity 0.4s ease;">
                 <div style="width: 45px; height: 45px; border: 3px solid rgba(255,255,255,0.15); border-top-color: #fff; border-radius: 50%; animation: playerSpin 0.8s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;"></div>
@@ -19,18 +18,13 @@ const VideoPlayer = {
                 @keyframes playerSpin { to { transform: rotate(360deg); } }
             </style>`;
 
-        // Check if the input is a raw HTML embed code (e.g., contains <iframe or <script or <embed)
         const isHtmlEmbedCode = /<\/?[a-z][\s\S]*>/i.test(rawInput);
 
         if (isHtmlEmbedCode) {
-            // Sanitize and inject custom embed codes while forcing full-size responsive styling
             let modifiedEmbed = rawInput;
-            
-            // If it contains an iframe, inject width/height/border attributes for perfect border-radius compliance
             if (modifiedEmbed.includes('<iframe')) {
                 modifiedEmbed = modifiedEmbed.replace(/width=["'][^"']*["']/gi, 'width="100%"');
                 modifiedEmbed = modifiedEmbed.replace(/height=["'][^"']*["']/gi, 'height="100%"');
-                // Ensure sandbox/allow attributes are present for maximum compatibility
                 if (!modifiedEmbed.includes('allow=')) {
                     modifiedEmbed = modifiedEmbed.replace('<iframe', '<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen');
                 }
@@ -44,7 +38,6 @@ const VideoPlayer = {
                     </div>
                 </div>`;
         } else {
-            // Standard URL Parsing (YouTube, Vimeo, HLS, Direct Files, or Generic Iframes)
             const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
             const ytMatch = rawInput.match(ytRegex);
 
@@ -85,7 +78,6 @@ const VideoPlayer = {
                         <video id="robustVideoElement" controls autoplay playsinline preload="auto" style="width: 100%; height: 100%; border-radius: 20px; object-fit: contain;"></video>
                     </div>`;
             } else {
-                // Generic URL Fallback with Anti-CDN Restriction Protection
                 embedHtml = `
                     <div class="control-panel" style="position: relative; width: 100%; aspect-ratio: 16/9; padding: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000;">
                         ${loadingOverlay}
@@ -106,7 +98,6 @@ const VideoPlayer = {
 
         container.innerHTML = embedHtml;
 
-        // Auto-dismiss loader for custom HTML embeds after a short render timeout
         if (isHtmlEmbedCode) {
             setTimeout(() => {
                 const loader = document.getElementById('playerLoader');
@@ -117,7 +108,6 @@ const VideoPlayer = {
             }, 1200);
         }
 
-        // Global CDN Block Handler helper
         window.handleCdnBlock = function() {
             const loader = document.getElementById('playerLoader');
             if (loader) loader.style.display = 'none';
@@ -125,7 +115,6 @@ const VideoPlayer = {
             if (notice) notice.style.display = 'flex';
         };
 
-        // Initialize HLS if applicable
         const isHlsUrl = rawInput.endsWith('.m3u8') || rawInput.includes('.m3u8?');
         const isDirectVideoUrl = /\.(mp4|webm|ogg)(\?.*)?$/i.test(rawInput);
         if (!isHtmlEmbedCode && (isHlsUrl || isDirectVideoUrl)) {
