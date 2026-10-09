@@ -108,16 +108,13 @@
 
             if (modelName) {
                 document.title = `${modelName} - Vault`;
-                // Connect the left "Albums" square to albums.html
                 document.getElementById('albumsTagLink').href = `albums.html?name=${encodeURIComponent(modelName)}`;
-                // Connect the right "Videos" square to videotag.html
                 document.getElementById('videoTagLink').href = `videotag.html?name=${encodeURIComponent(modelName)}`;
             }
 
             const allStreams = StorageDB.getStreams();
             const matchedStreams = allStreams.filter(stream => stream.models && stream.models.includes(modelName));
 
-            // Optional background thumbnails for left and right boxes if items exist
             const feat1AlbumsLink = document.getElementById('albumsTagLink');
             if (matchedStreams.length > 0) {
                 const s1 = matchedStreams[0];
@@ -143,11 +140,6 @@
             }
 
             const grid = document.getElementById('vaultGrid');
-            if (matchedStreams.length === 0) {
-                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No streams found for this model.</div>`;
-                return;
-            }
-
             grid.innerHTML = '';
             matchedStreams.forEach((stream, index) => {
                 const card = document.createElement('a');
