@@ -27,22 +27,14 @@
         .vault-header {
             display: flex;
             align-items: center;
-            gap: 20px;
+            justify-content: space-between;
             background: var(--card-bg);
             backdrop-filter: blur(40px);
             border: 1px solid var(--card-border);
             border-radius: 20px;
-            padding: 20px 30px;
+            padding: 24px 32px;
             margin-bottom: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.8), var(--neon-glow);
-        }
-
-        .vault-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--card-border);
         }
 
         /* Large Featured Square Thumbnails Section */
@@ -103,20 +95,23 @@
         </div>
 
         <div class="vault-header" id="vaultHeader">
-            <img id="vaultAvatar" src="" alt="Model" class="vault-avatar" style="display:none;">
             <div>
-                <h1 id="vaultTitle" style="font-size: 1.5rem; font-weight: 800; color: #fff;">Loading Vault...</h1>
-                <p id="vaultSubtitle" style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Streams tagged with this model</p>
+                <h1 id="vaultTitle" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Loading Vault...</h1>
+                <p id="vaultSubtitle" style="color: var(--text-muted); font-size: 0.85rem;">Streams and content tagged with this model</p>
             </div>
         </div>
 
-        <!-- Two Large Curved Square Thumbnails -->
+        <!-- Two Large Curved Square Thumbnails Labeled Albums & Videos -->
         <div class="featured-squares-grid" id="featuredSquares">
             <div class="featured-square-card">
-                <div id="featThumb1" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#888;position:relative;">Loading...</div>
+                <div id="featThumb1" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#888;position:relative;">
+                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 18px 20px; font-weight: 800; font-size: 1.1rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5;">Albums</div>
+                </div>
             </div>
             <div class="featured-square-card">
-                <div id="featThumb2" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#888;position:relative;">Loading...</div>
+                <div id="featThumb2" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#888;position:relative;">
+                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 18px 20px; font-weight: 800; font-size: 1.1rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5;">Videos</div>
+                </div>
             </div>
         </div>
 
@@ -129,16 +124,10 @@
             await StorageDB.initDB();
             const params = new URLSearchParams(window.location.search);
             const modelName = decodeURIComponent(params.get('name') ?? '');
-            const modelThumb = decodeURIComponent(params.get('thumb') ?? '');
 
             if (modelName) {
                 document.getElementById('vaultTitle').textContent = modelName;
                 document.title = `${modelName} - Vault`;
-            }
-            if (modelThumb) {
-                const avatar = document.getElementById('vaultAvatar');
-                avatar.src = modelThumb;
-                avatar.style.display = 'block';
             }
 
             const allStreams = StorageDB.getStreams();
@@ -154,10 +143,12 @@
                 feat1.innerHTML = `
                     <a href="watch.html?index=${gIdx1}" style="position:absolute; inset:0; display:block;">
                         ${s1.thumbnail ? `<img src="${s1.thumbnail}" alt="${s1.title}" style="object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0;">` : ''}
-                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 14px 16px; font-weight: 700; font-size: 0.9rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5;">${s1.title}</div>
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 18px 20px; font-weight: 800; font-size: 1.1rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5;">Albums</div>
                     </a>`;
             } else {
-                feat1.innerHTML = `<span style="font-size:0.85rem; color:var(--text-muted);">No featured stream 1</span>`;
+                feat1.innerHTML = `
+                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 18px 20px; font-weight: 800; font-size: 1.1rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5;">Albums</div>
+                    <span style="font-size:0.85rem; color:var(--text-muted);">No stream available</span>`;
             }
 
             if (matchedStreams.length > 1) {
@@ -166,10 +157,12 @@
                 feat2.innerHTML = `
                     <a href="watch.html?index=${gIdx2}" style="position:absolute; inset:0; display:block;">
                         ${s2.thumbnail ? `<img src="${s2.thumbnail}" alt="${s2.title}" style="object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0;">` : ''}
-                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 14px 16px; font-weight: 700; font-size: 0.9rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5;">${s2.title}</div>
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 18px 20px; font-weight: 800; font-size: 1.1rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5;">Videos</div>
                     </a>`;
             } else {
-                feat2.innerHTML = `<span style="font-size:0.85rem; color:var(--text-muted);">No featured stream 2</span>`;
+                feat2.innerHTML = `
+                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 18px 20px; font-weight: 800; font-size: 1.1rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5;">Videos</div>
+                    <span style="font-size:0.85rem; color:var(--text-muted);">No stream available</span>`;
             }
 
             const grid = document.getElementById('vaultGrid');
