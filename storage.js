@@ -33,7 +33,7 @@ const StorageDB = {
         const token = localStorage.getItem('ghToken');
 
         if (!owner || !repo || !token) {
-            console.warn("GitHub credentials not configured in localStorage. Data saved locally.");
+            alert("GitHub Sync Error: Credentials not found! Please go to your 'Gallery Hub' (video-gallery.html) and save your GitHub Username, Repository Name, and Personal Access Token.");
             return;
         }
 
@@ -46,22 +46,25 @@ const StorageDB = {
         const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/video-gallery.html`;
 
         try {
+            // 1. Fetch current file to get its SHA
             const getRes = await fetch(apiUrl, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+            
             if (!getRes.ok) {
-                console.warn("video-gallery.html not found on repo yet. Skipping remote API sync.");
-                return;
+                throw new Error(`GitHub API Error (${getRes.status}): Could not find 'video-gallery.html' in repository '${owner}/${repo}'. Make sure video-gallery.html is committed to your main branch!`);
             }
+            
             const fileData = await getRes.json();
-
             let currentHtml = decodeURIComponent(escape(atob(fileData.content)));
+            
             const updatedHtml = currentHtml.replace(
                 /<script type="application\/json" id="embedded-database">[\s\S]*?<\/script>/,
                 `<script type="application/json" id="embedded-database">\n    ${newJsonString}\n    </script>`
             );
 
-            await fetch(apiUrl, {
+            // 2. Push updated file to GitHub
+            const putRes = await fetch(apiUrl, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -73,9 +76,16 @@ const StorageDB = {
                     sha: fileData.sha
                 })
             });
+
+            if (!putRes.ok) {
+                const errJson = await putRes.json();
+                throw new Error(`GitHub Commit Failed (${putRes.status}): ${errJson.message || 'Check your Personal Access Token scopes.'}`);
+            }
+
             console.log("Successfully synced database updates to GitHub!");
         } catch (err) {
-            console.error("GitHub API sync warning:", err);
+            console.error("GitHub API sync error:", err);
+            alert("Automation Sync Failed:\n" + err.message);
         }
     },
 
