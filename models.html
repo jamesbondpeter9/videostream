@@ -26,6 +26,13 @@
         .mondrian-card.portrait { grid-column: span 1; grid-row: span 2; }
         .mondrian-card.square { grid-column: span 1; grid-row: span 1; }
 
+        .mondrian-thumb {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
         .update-thumb-btn { 
             position: absolute; top: 10px; left: 10px; 
             background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.3); 
@@ -214,8 +221,8 @@
                     <div class="mondrian-thumb">
                         <button type="button" class="update-thumb-btn" onclick="openUpdateThumbModal(${model.originalIndex})" title="Update thumbnail">+</button>
                         <button type="button" class="delete-btn" onclick="openDeleteModal(${model.originalIndex})" title="Delete model">&times;</button>
-                        ${model.thumbnail ? `<img src="${model.thumbnail}" alt="${model.name}">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Photo</div>'}
-                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.85rem; color: #fff;">${model.name}</div>
+                        ${model.thumbnail ? `<img src="${model.thumbnail}" alt="${model.name}" style="object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Photo</div>'}
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 14px 16px; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 60%, transparent 100%); font-weight: 700; font-size: 0.85rem; color: #fff; z-index: 5;">${model.name}</div>
                     </div>`;
                 grid.appendChild(card);
             });
