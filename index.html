@@ -30,7 +30,6 @@
         .mondrian-card.portrait { grid-column: span 1; grid-row: span 2; }
         .mondrian-card.square { grid-column: span 1; grid-row: span 1; }
 
-        /* Absolute alignment container for thumbnail contents */
         .mondrian-thumb {
             display: flex;
             align-items: center;
@@ -63,8 +62,8 @@
             grid.innerHTML = '';
             streams.forEach((stream, index) => {
                 const card = document.createElement('a');
-                card.href = stream.url;
-                card.target = '_blank';
+                // Link to watch.html passing the stream index
+                card.href = `watch.html?index=${index}`;
                 
                 const patterns = ['landscape', 'portrait', 'square', 'landscape'];
                 card.className = `mondrian-card ${patterns[index % patterns.length]}`;
