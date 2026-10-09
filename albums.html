@@ -33,6 +33,39 @@
             margin-bottom: 24px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.8), var(--neon-glow);
         }
+
+        /* Mosaic Grid configured for 180px base row height matching index.html */
+        .album-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-auto-rows: 180px;
+            grid-auto-flow: dense;
+            gap: 2px;
+            align-items: stretch;
+        }
+        @media(max-width: 1400px) { .album-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media(max-width: 900px) { .album-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media(max-width: 500px) { .album-grid { grid-template-columns: 1fr; } }
+
+        .mondrian-card.landscape { 
+            grid-column: span 2; 
+            grid-row: span 3; 
+        }
+
+        .mondrian-card.portrait { 
+            grid-column: span 1; 
+            grid-row: span 2; 
+        }
+
+        .mondrian-thumb {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -47,9 +80,12 @@
             <h1 id="tagTitle" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Albums</h1>
             <p id="tagSubtitle" style="color: var(--text-muted); font-size: 0.85rem;">Albums featuring this model</p>
         </div>
+
+        <div class="album-grid" id="albumGrid"></div>
     </div>
 
     <script src="storage.js"></script>
+    <script src="photoviewer.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
@@ -60,6 +96,38 @@
                 document.getElementById('tagTitle').textContent = `${modelName} - Albums`;
                 document.title = `${modelName} Albums - Portal`;
             }
+
+            // Note: If you store albums in storage.js, fetch them here. 
+            // For demonstration, we filter streams or photo items tagged with this model. 
+            // You can adapt this array source to your specific albums database structure.
+            const allStreams = StorageDB.getStreams();
+            const matchedItems = allStreams.filter(item => item.models && item.models.includes(modelName));
+
+            const grid = document.getElementById('albumGrid');
+            if (matchedItems.length === 0) {
+                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No albums found for this model.</div>`;
+                return;
+            }
+
+            // Map items for the PhotoViewer gallery array format: [{src: '...', title: '...'}]
+            const galleryList = matchedItems.map(item => ({
+                src: item.thumbnail || '',
+                title: item.title || 'Album Photo'
+            }));
+
+            grid.innerHTML = '';
+            matchedItems.forEach((item, index) => {
+                const card = document.createElement('div');
+                const patterns = ['landscape', 'portrait', 'portrait', 'landscape'];
+                card.className = `mondrian-card ${patterns[index % patterns.length]}`;
+
+                card.innerHTML = `
+                    <div class="mondrian-thumb" onclick="PhotoViewer.open(galleryList, ${index})">
+                        ${item.thumbnail ? `<img src="${item.thumbnail}" alt="${item.title}" style="object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Image</div>'}
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px 14px; font-weight: 700; font-size: 0.8rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5;">${item.title}</div>
+                    </div>`;
+                grid.appendChild(card);
+            });
         });
     </script>
 </body>
