@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gallery Hub - Portal</title>
@@ -21,7 +19,7 @@
         
         <div class="hub-container">
             <div class="control-panel" style="text-align: center;">
-                <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 8px;">Gallery Hub & Database Sync</h1>
+                <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 8px;">Gallery Hub &amp; Database Sync</h1>
                 <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Export your current local database so GitHub Actions can update <code style="color:#fff;">videos.json</code> automatically.</p>
                 
                 <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
@@ -31,7 +29,26 @@
 
                 <div style="text-align: left; margin-top: 10px;">
                     <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">Current Database Payload Preview:</label>
-                    <pre id="jsonPreview" class="data-preview">Loading data...</pre>
+                    <pre id="jsonPreview" class="data-preview">{
+    "models": [],
+    "streams": [
+        {
+            "title": "Q",
+            "url": "https://s70.bigcdn.cc/pubs/6ac92f2e8049a1.80106511/1080.mp4",
+            "thumbnail": "https://cdni.pornpics.de/1280/3/26/81758824/81758824_002_71c3.jpg",
+            "models": [],
+            "createdAt": 1791572349427
+        },
+        {
+            "title": "Q",
+            "url": "https://s70.bigcdn.cc/pubs/6ac92f2e8049a1.80106511/1080.mp4",
+            "thumbnail": "https://cdni.pornpics.de/1280/7/556/67015419/67015419_003_605e.jpg",
+            "models": [],
+            "createdAt": 1791570970910
+        }
+    ],
+    "homepage_thumbnails": []
+}</pre>
                 </div>
             </div>
         </div>
@@ -39,10 +56,25 @@
         <!-- EMBEDDED JSON DATABASE SOURCE OF TRUTH FOR GITHUB ACTIONS -->
         <script type="application/json" id="embedded-database">
         {
-            "models": [],
-            "streams": [],
-            "homepage_thumbnails": []
-        }
+        "models": [],
+        "streams": [
+                {
+                        "title": "Q",
+                        "url": "https://s70.bigcdn.cc/pubs/6ac92f2e8049a1.80106511/1080.mp4",
+                        "thumbnail": "https://cdni.pornpics.de/1280/3/26/81758824/81758824_002_71c3.jpg",
+                        "models": [],
+                        "createdAt": 1791572349427
+                },
+                {
+                        "title": "Q",
+                        "url": "https://s70.bigcdn.cc/pubs/6ac92f2e8049a1.80106511/1080.mp4",
+                        "thumbnail": "https://cdni.pornpics.de/1280/7/556/67015419/67015419_003_605e.jpg",
+                        "models": [],
+                        "createdAt": 1791570970910
+                }
+        ],
+        "homepage_thumbnails": []
+}
         </script>
     </div>
 
@@ -99,5 +131,6 @@
             a.click();
         }
     </script>
-</body>
-</html>
+
+
+</body></html>
