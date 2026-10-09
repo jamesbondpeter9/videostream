@@ -14,17 +14,57 @@
             <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box">+ Add</div></a>
             <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Gallery Hub</div></a>
         </div>
-        <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 20px;">Models Directory</h1>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 style="font-size: 1.5rem; font-weight: 800;">Models Directory</h1>
+            <button onclick="openAddModelModal()" class="btn-primary" style="padding: 10px 18px; font-size: 0.85rem;">+ Add Model</button>
+        </div>
+
         <div class="mondrian-grid" id="modelsGrid"></div>
+
+        <!-- Simple Add Model Modal Form -->
+        <div id="modelModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; z-index:100;">
+            <div class="control-panel" style="width: 100%; max-width: 400px; position:relative;">
+                <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 16px;">Add New Model</h3>
+                <form id="modelForm">
+                    <div style="margin-bottom: 14px;">
+                        <label style="display:block; font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">Model Name</label>
+                        <input type="text" id="modelName" required placeholder="Enter model name">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display:block; font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">Photo / Thumbnail URL</label>
+                        <input type="text" id="modelThumb" required placeholder="https://...">
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn-primary" style="flex:1;">Save Model</button>
+                        <button type="button" onclick="closeAddModelModal()" class="btn-primary" style="background:#333; color:#fff; flex:1;">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
     <script src="storage.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
+            renderModels();
+
+            document.getElementById('modelForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('modelName').value.trim();
+                const thumb = document.getElementById('modelThumb').value.trim();
+                if (!name || !thumb) return;
+                StorageDB.addModel(name, thumb);
+                closeAddModelModal();
+                renderModels();
+            });
+        });
+
+        function renderModels() {
             const models = StorageDB.getModels();
             const grid = document.getElementById('modelsGrid');
             if (models.length === 0) {
-                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No models found in directory.</div>`;
+                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No models found in directory. Click "+ Add Model" to add one!</div>`;
                 return;
             }
             grid.innerHTML = '';
@@ -32,13 +72,16 @@
                 const card = document.createElement('div');
                 card.className = 'mondrian-card portrait';
                 card.innerHTML = `
-                    <div class="mondrian-thumb portrait-mode">
+                    <div class="mondrian-thumb">
                         ${model.thumbnail ? `<img src="${model.thumbnail}" alt="${model.name}">` : '<span>No Photo</span>'}
                         <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 14px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.9rem; color: #fff;">${model.name}</div>
                     </div>`;
                 grid.appendChild(card);
             });
-        });
+        }
+
+        function openAddModelModal() { document.getElementById('modelModal').style.display = 'flex'; }
+        function closeAddModelModal() { document.getElementById('modelModal').style.display = 'none'; }
     </script>
 </body>
 </html>
