@@ -5,31 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Stream - Portal</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .model-tags-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            max-height: 140px;
-            overflow-y: auto;
-            padding: 4px;
-        }
-        .model-tag-pill {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--card-border);
-            color: var(--text-muted);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .model-tag-pill.selected {
-            background: #ffffff;
-            color: #000000;
-            border-color: #ffffff;
-        }
-    </style>
 </head>
 <body>
     <div class="site-container">
@@ -39,7 +14,6 @@
             <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background:#fff; color:#000;">+ Add</div></a>
             <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Gallery Hub</div></a>
         </div>
-
         <div class="stream-layout-container">
             <div class="control-panel">
                 <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 20px;">Add New Stream</h2>
@@ -52,15 +26,9 @@
                         <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Stream URL</label>
                         <input type="text" id="streamUrl" required placeholder="https://www.youtube.com/watch?v=...">
                     </div>
-                    <div style="margin-bottom: 16px;">
+                    <div style="margin-bottom: 20px;">
                         <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Thumbnail URL (Optional)</label>
                         <input type="text" id="streamThumbnail" placeholder="Leave blank to auto-detect YouTube thumb">
-                    </div>
-                    <div style="margin-bottom: 20px;">
-                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Tag Models</label>
-                        <div id="modelTagsContainer" class="model-tags-container">
-                            <span style="color: var(--text-muted); font-size: 0.8rem;">No models found in directory.</span>
-                        </div>
                     </div>
                     <button type="submit" class="btn-primary" style="width: 100%;">Save Stream</button>
                 </form>
@@ -72,7 +40,6 @@
             </div>
         </div>
     </div>
-
     <script src="storage.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -80,29 +47,6 @@
             const urlInput = document.getElementById('streamUrl');
             const thumbInput = document.getElementById('streamThumbnail');
             const previewContainer = document.getElementById('previewContainer');
-            const modelTagsContainer = document.getElementById('modelTagsContainer');
-
-            const models = StorageDB.getModels();
-            const selectedModels = new Set();
-
-            if (models.length > 0) {
-                modelTagsContainer.innerHTML = '';
-                models.forEach(model => {
-                    const pill = document.createElement('div');
-                    pill.className = 'model-tag-pill';
-                    pill.textContent = model.name;
-                    pill.addEventListener('click', () => {
-                        if (selectedModels.has(model.name)) {
-                            selectedModels.delete(model.name);
-                            pill.classList.remove('selected');
-                        } else {
-                            selectedModels.add(model.name);
-                            pill.classList.add('selected');
-                        }
-                    });
-                    modelTagsContainer.appendChild(pill);
-                });
-            }
 
             urlInput.addEventListener('input', () => {
                 let url = urlInput.value.trim();
@@ -134,14 +78,7 @@
                 }
 
                 if (!title || !url) return;
-
-                StorageDB.addStream({
-                    title,
-                    url,
-                    thumbnail: thumbnail || '',
-                    models: Array.from(selectedModels)
-                });
-
+                StorageDB.addStream({ title, url, thumbnail: thumbnail || '', models: [] });
                 alert('Stream saved successfully!');
                 window.location.href = 'index.html';
             });
