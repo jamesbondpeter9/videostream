@@ -34,13 +34,13 @@
         @media(max-width: 900px) { .home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media(max-width: 500px) { .home-grid { grid-template-columns: 1fr; } }
 
-        /* Landscape: ~500px wide x 180px high (span 2 cols, span 1 row) */
+        /* Landscape: Matches portrait width (span 1 col, span 1 row -> 180px x 180px square width match) */
         .mondrian-card.landscape { 
-            grid-column: span 2; 
+            grid-column: span 1; 
             grid-row: span 1; 
         }
 
-        /* Portrait: ~250px wide x 360px high (span 1 col, span 2 rows) */
+        /* Portrait: Span 1 col, span 2 rows (~250px wide x 360px high) */
         .mondrian-card.portrait { 
             grid-column: span 1; 
             grid-row: span 2; 
