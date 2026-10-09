@@ -6,20 +6,37 @@ const StorageDB = {
     MODELS_KEY: 'video_portal_models_db',
 
     async initDB() {
+        // 1. Ensure local storage keys exist immediately
+        if (!localStorage.getItem(this.MODELS_KEY)) {
+            localStorage.setItem(this.MODELS_KEY, JSON.stringify([]));
+        }
+        if (!localStorage.getItem(this.STREAMS_KEY)) {
+            localStorage.setItem(this.STREAMS_KEY, JSON.stringify([]));
+        }
+
+        // 2. Attempt to fetch live videos.json in the background to sync latest remote updates
         try {
             const response = await fetch('videos.json?' + new Date().getTime());
             if (response.ok) {
                 const data = await response.json();
-                if (data.models) localStorage.setItem(this.MODELS_KEY, JSON.stringify(data.models));
-                if (data.streams) localStorage.setItem(this.STREAMS_KEY, JSON.stringify(data.streams));
-                return;
+                
+                // If remote has data and local is empty (or to keep them aligned), merge or update
+                if (data.models && data.models.length > 0) {
+                    const localModels = JSON.parse(localStorage.getItem(this.MODELS_KEY) || '[]');
+                    if (localModels.length === 0) {
+                        localStorage.setItem(this.MODELS_KEY, JSON.stringify(data.models));
+                    }
+                }
+                if (data.streams && data.streams.length > 0) {
+                    const localStreams = JSON.parse(localStorage.getItem(this.STREAMS_KEY) || '[]');
+                    if (localStreams.length === 0) {
+                        localStorage.setItem(this.STREAMS_KEY, JSON.stringify(data.streams));
+                    }
+                }
             }
         } catch (e) {
-            console.error('Could not load videos.json from repository, checking localStorage fallback.', e);
+            console.log('Using local storage database cache (offline or remote fetch skipped).');
         }
-
-        if (!localStorage.getItem(this.MODELS_KEY)) localStorage.setItem(this.MODELS_KEY, JSON.stringify([]));
-        if (!localStorage.getItem(this.STREAMS_KEY)) localStorage.setItem(this.STREAMS_KEY, JSON.stringify([]));
     },
 
     async syncToGitHub(commitMessage = "Auto-update video gallery database") {
@@ -28,7 +45,7 @@ const StorageDB = {
         const token = localStorage.getItem('ghToken');
 
         if (!owner || !repo || !token) {
-            console.warn("GitHub credentials (ghOwner, ghRepo, ghToken) not set in localStorage.");
+            console.warn("GitHub credentials not found in localStorage. Saved locally only.");
             return;
         }
 
@@ -44,7 +61,7 @@ const StorageDB = {
             const getRes = await fetch(apiUrl, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (!getRes.ok) throw new Error("Failed to fetch video-gallery.html from GitHub repository.");
+            if (!getRes.ok) throw new Error("Failed to fetch video-gallery.html from GitHub.");
             const fileData = await getRes.json();
 
             let currentHtml = decodeURIComponent(escape(atob(fileData.content)));
@@ -66,10 +83,10 @@ const StorageDB = {
                 })
             });
 
-            if (!putRes.ok) throw new Error("Failed to commit updated video-gallery.html to GitHub.");
+            if (!putRes.ok) throw new Error("Failed to commit to GitHub.");
             console.log("Successfully synced database updates to video-gallery.html on GitHub!");
         } catch (err) {
-            console.error("GitHub API automatic sync failed:", err);
+            console.error("GitHub API sync warning:", err);
         }
     },
 
