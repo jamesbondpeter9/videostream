@@ -1,0 +1,45 @@
+name: Auto-update videos.json from video-gallery.html
+
+on:
+  push:
+    paths:
+      - 'video-gallery.html' # Triggers automatically whenever video-gallery.html is pushed via the UI
+
+jobs:
+  update-json-from-gallery:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Allows the workflow to commit videos.json back to the repository
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Extract JSON and update videos.json
+        run: |
+          node -e '
+          const fs = require("fs");
+          const htmlContent = fs.readFileSync("video-gallery.html", "utf8");
+          
+          // Extract the embedded JSON block from inside video-gallery.html
+          const match = htmlContent.match(/<script type="application\/json" id="embedded-database">([\\s\\S]*?)<\/script>/i);
+          if (!match) {
+              console.error("Embedded database script tag not found!");
+              process.exit(1);
+          }
+          
+          const jsonData = JSON.parse(match[1].trim());
+          fs.writeFileSync("videos.json", JSON.stringify(jsonData, null, 4), "utf8");
+          console.log("Successfully updated videos.json from video-gallery.html!");
+          '
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-update videos.json from Gallery Hub [skip ci]"
+          file_pattern: "videos.json"
