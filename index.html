@@ -8,79 +8,53 @@
 </head>
 <body>
     <div class="site-container">
-        <!-- Compact Nav Bar matching stream.html -->
+        <!-- Navigation Bar -->
         <div class="nav-bar-compact" style="display: flex; gap: 8px; margin-bottom: 24px;">
-            <a href="index.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
-                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">Home</div>
+            <a href="index.html" class="mondrian-nav-card">
+                <div class="mondrian-nav-box" style="background: #fff; color: #000;">Home</div>
             </a>
-            <a href="models.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
-                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">Models</div>
+            <a href="models.html" class="mondrian-nav-card">
+                <div class="mondrian-nav-box">Models</div>
             </a>
-            <a href="stream.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;">
-                <div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">+ Add</div>
+            <a href="stream.html" class="mondrian-nav-card">
+                <div class="mondrian-nav-box">+ Add</div>
+            </a>
+            <a href="video-gallery.html" class="mondrian-nav-card">
+                <div class="mondrian-nav-box">Gallery Hub</div>
             </a>
         </div>
 
-        <!-- Main Stream Mondrian Grid -->
-        <div id="mondrianGrid" class="mondrian-grid"></div>
+        <div class="mondrian-grid" id="streamsGrid">
+            <!-- Dynamically populated streams -->
+        </div>
     </div>
 
     <script src="storage.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
-            
-            const grid = document.getElementById('mondrianGrid');
             const streams = StorageDB.getStreams();
+            const grid = document.getElementById('streamsGrid');
 
             if (streams.length === 0) {
-                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 40px;">No streams found. Click "+ Add" to create one.</div>`;
+                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No streams found. Click "+ Add" to create your first stream!</div>`;
                 return;
             }
 
+            grid.innerHTML = '';
             streams.forEach((stream, index) => {
                 const card = document.createElement('a');
                 card.href = `watch.html?index=${index}`;
-                card.className = 'mondrian-card';
-                card.style.textDecoration = 'none';
+                card.className = 'mondrian-card landscape';
 
-                const thumbDiv = document.createElement('div');
-                thumbDiv.className = 'mondrian-thumb';
-
-                let thumbSrc = stream.thumbnail;
-                if (!thumbSrc && stream.url) {
-                    if (stream.url.includes('youtube.com') || stream.url.includes('youtu.be')) {
-                        let ytId = '';
-                        if (stream.url.includes('embed/')) ytId = stream.url.split('embed/')[1].split('?')[0];
-                        else if (stream.url.includes('watch?v=')) ytId = stream.url.split('watch?v=')[1].split('&')[0];
-                        else if (stream.url.includes('youtu.be/')) ytId = stream.url.split('youtu.be/')[1].split('?')[0];
-                        if (ytId) thumbSrc = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-                    }
-                }
-
-                if (thumbSrc) {
-                    const img = new Image();
-                    img.src = thumbSrc;
-                    img.onload = () => {
-                        if (img.naturalHeight > img.naturalWidth) {
-                            card.classList.add('portrait');
-                            thumbDiv.classList.add('portrait-mode');
-                        } else {
-                            card.classList.add('landscape');
-                        }
-                    };
-                    thumbDiv.innerHTML = `
-                        <img src="${thumbSrc}" alt="${stream.title}" style="width: 100%; height: 100%; object-fit: cover;">
-                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px; background: linear-gradient(to top, rgba(0,0,0,0.85), transparent); font-weight: 700; font-size: 0.85rem; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                card.innerHTML = `
+                    <div class="mondrian-thumb">
+                        ${stream.thumbnail ? `<img src="${stream.thumbnail}" alt="${stream.title}">` : '<span>No Thumbnail</span>'}
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 14px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.9rem; color: #fff;">
                             ${stream.title}
                         </div>
-                    `;
-                } else {
-                    card.classList.add('landscape');
-                    thumbDiv.innerHTML = `<span style="color:#fff; padding:20px; display:block;">${stream.title}</span>`;
-                }
-
-                card.appendChild(thumbDiv);
+                    </div>
+                `;
                 grid.appendChild(card);
             });
         });
