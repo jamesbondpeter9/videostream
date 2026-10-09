@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <style>
         .hub-container { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-        .data-preview { background: rgba(0,0,0,0.8); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; font-family: monospace; font-size: 0.85rem; color: #0f0; max-height: 250px; overflow-y: auto; text-align: left; white-space: pre-wrap; word-break: break-all; }
+        .data-preview { background: rgba(0,0,0,0.85); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; font-family: monospace; font-size: 0.8rem; color: #0f0; max-height: 250px; overflow-y: auto; text-align: left; white-space: pre-wrap; word-break: break-all; }
     </style>
 </head>
 <body>
@@ -72,10 +72,7 @@
             const payload = getPayload();
             const payloadString = JSON.stringify(payload, null, 8);
 
-            // Read current page HTML structure
             let htmlContent = document.documentElement.outerHTML;
-
-            // Replace embedded database script content with current local storage data
             const newScriptTag = `<script type="application/json" id="embedded-database">\n        ${payloadString}\n        <\/script>`;
             htmlContent = htmlContent.replace(
                 /<script type="application\/json" id="embedded-database">[\s\S]*?<\/script>/,
@@ -88,18 +85,17 @@
             a.href = url;
             a.download = 'video-gallery.html';
             a.click();
-            alert('video-gallery.html downloaded! Commit this file to your repository root to trigger automated syncing of videos.json.');
+            alert('video-gallery.html downloaded! Upload or commit this file to your repository root to trigger automated syncing of videos.json.');
         }
 
         function downloadVideosJson() {
             const payload = getPayload();
             const blob = new Blob([JSON.stringify(payload, null, 4)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const a = URL.createObjectURL(blob);
-            const aElem = document.createElement('a');
-            aElem.href = url;
-            aElem.download = 'videos.json';
-            aElem.click();
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'videos.json';
+            a.click();
         }
     </script>
 </body>
