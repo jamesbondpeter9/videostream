@@ -28,12 +28,12 @@ const StorageDB = {
     },
 
     async syncToGitHub(commitMessage = "Auto-update video gallery database") {
-        const owner = localStorage.getItem('ghOwner');
-        const repo = localStorage.getItem('ghRepo');
-        const token = localStorage.getItem('ghToken');
+        const owner = (localStorage.getItem('ghOwner') || '').trim();
+        const repo = (localStorage.getItem('ghRepo') || '').trim();
+        const token = (localStorage.getItem('ghToken') || '').trim();
 
         if (!owner || !repo || !token) {
-            alert("GitHub Sync Error: Credentials not found! Please go to your 'Gallery Hub' (video-gallery.html) and save your GitHub Username, Repository Name, and Personal Access Token.");
+            console.warn("GitHub credentials missing. Saved locally only.");
             return;
         }
 
@@ -46,13 +46,19 @@ const StorageDB = {
         const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/video-gallery.html`;
 
         try {
-            // 1. Fetch current file to get its SHA
+            // 1. Fetch file with explicit headers
             const getRes = await fetch(apiUrl, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/vnd.github+json',
+                    'X-GitHub-Api-Version': '2022-11-28'
+                }
             });
             
             if (!getRes.ok) {
-                throw new Error(`GitHub API Error (${getRes.status}): Could not find 'video-gallery.html' in repository '${owner}/${repo}'. Make sure video-gallery.html is committed to your main branch!`);
+                const errText = await getRes.text();
+                throw new Error(`GitHub GET Failed (${getRes.status}): Check if Owner ('${owner}') and Repo ('${repo}') are exact. Details: ${errText}`);
             }
             
             const fileData = await getRes.json();
@@ -63,12 +69,14 @@ const StorageDB = {
                 `<script type="application/json" id="embedded-database">\n    ${newJsonString}\n    </script>`
             );
 
-            // 2. Push updated file to GitHub
+            // 2. Push updated file to GitHub via PUT
             const putRes = await fetch(apiUrl, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Accept': 'application/vnd.github+json',
+                    'Content-Type': 'application/json',
+                    'X-GitHub-Api-Version': '2022-11-28'
                 },
                 body: JSON.stringify({
                     message: commitMessage,
@@ -79,13 +87,14 @@ const StorageDB = {
 
             if (!putRes.ok) {
                 const errJson = await putRes.json();
-                throw new Error(`GitHub Commit Failed (${putRes.status}): ${errJson.message || 'Check your Personal Access Token scopes.'}`);
+                throw new Error(`GitHub PUT Failed (${putRes.status}): ${errJson.message || 'Check token scopes.'}`);
             }
 
             console.log("Successfully synced database updates to GitHub!");
         } catch (err) {
             console.error("GitHub API sync error:", err);
-            alert("Automation Sync Failed:\n" + err.message);
+            // Non-blocking notification so local app usage is never locked out
+            console.warn("Data saved safely to local browser storage, but GitHub API sync encountered an issue.");
         }
     },
 
