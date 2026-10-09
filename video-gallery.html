@@ -16,9 +16,18 @@
         </div>
         <div class="control-panel" style="max-width: 600px; margin: 0 auto; text-align: center;">
             <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 12px;">Gallery Hub</h1>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;">Export your portal database instantly to update your repository database file.</p>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;">Export database to update repository schema seamlessly.</p>
             <button onclick="downloadVideosJson()" class="btn-primary" style="width: 100%;">Download Updated videos.json</button>
         </div>
+
+        <!-- EMBEDDED JSON DATABASE SOURCE OF TRUTH REQUIRED FOR WORKFLOW ACTIONS -->
+        <script type="application/json" id="embedded-database">
+        {
+            "models": [],
+            "streams": [],
+            "homepage_thumbnails": []
+        }
+        </script>
     </div>
     <script src="storage.js"></script>
     <script>
