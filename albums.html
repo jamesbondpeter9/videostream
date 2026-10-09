@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Albums - Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Compact Navigation Header Sizing */
+        .nav-bar-compact {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 2px;
+            margin-bottom: 20px;
+            max-width: 1700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media(max-width: 900px) { .nav-bar-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+        .mondrian-nav-box {
+            height: 52px !important;
+            font-size: 0.85rem !important;
+            border-radius: 12px !important;
+        }
+
+        .tag-header {
+            background: var(--card-bg);
+            backdrop-filter: blur(40px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8), var(--neon-glow);
+        }
+    </style>
+</head>
+<body>
+    <div class="site-container">
+        <!-- Top Nav Bar (Home & Models) -->
+        <div class="nav-bar-compact">
+            <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Home</div></a>
+            <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background: #fff; color: #000;">Models</div></a>
+        </div>
+
+        <div class="tag-header">
+            <h1 id="tagTitle" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Albums</h1>
+            <p id="tagSubtitle" style="color: var(--text-muted); font-size: 0.85rem;">Albums featuring this model</p>
+        </div>
+    </div>
+
+    <script src="storage.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await StorageDB.initDB();
+            const params = new URLSearchParams(window.location.search);
+            const modelName = decodeURIComponent(params.get('name') ?? '');
+
+            if (modelName) {
+                document.getElementById('tagTitle').textContent = `${modelName} - Albums`;
+                document.title = `${modelName} Albums - Portal`;
+            }
+        });
+    </script>
+</body>
+</html>
