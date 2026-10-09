@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gallery Hub - Portal</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .hub-container { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .data-preview { background: rgba(0,0,0,0.8); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; font-family: monospace; font-size: 0.85rem; color: #0f0; max-height: 250px; overflow-y: auto; text-align: left; }
+    </style>
 </head>
 <body>
     <div class="site-container">
@@ -14,13 +18,25 @@
             <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box">+ Add</div></a>
             <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background:#fff; color:#000;">Gallery Hub</div></a>
         </div>
-        <div class="control-panel" style="max-width: 600px; margin: 0 auto; text-align: center;">
-            <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 12px;">Gallery Hub</h1>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;">Export database to update repository schema seamlessly.</p>
-            <button onclick="downloadVideosJson()" class="btn-primary" style="width: 100%;">Download Updated videos.json</button>
+        
+        <div class="hub-container">
+            <div class="control-panel" style="text-align: center;">
+                <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 8px;">Gallery Hub & Database Sync</h1>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Export your current local database so GitHub Actions can update <code style="color:#fff;">videos.json</code> automatically.</p>
+                
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
+                    <button onclick="downloadUpdatedGallery()" class="btn-primary" style="flex: 1; min-width: 250px;">1. Download Updated video-gallery.html</button>
+                    <button onclick="downloadVideosJson()" class="btn-primary" style="background: #333; color: #fff; flex: 1; min-width: 200px;">Download videos.json Only</button>
+                </div>
+
+                <div style="text-align: left; margin-top: 10px;">
+                    <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px;">Current Database Payload Preview:</label>
+                    <pre id="jsonPreview" class="data-preview">Loading data...</pre>
+                </div>
+            </div>
         </div>
 
-        <!-- EMBEDDED JSON DATABASE SOURCE OF TRUTH REQUIRED FOR WORKFLOW ACTIONS -->
+        <!-- EMBEDDED JSON DATABASE SOURCE OF TRUTH FOR GITHUB ACTIONS -->
         <script type="application/json" id="embedded-database">
         {
             "models": [],
@@ -29,15 +45,53 @@
         }
         </script>
     </div>
+
     <script src="storage.js"></script>
     <script>
-        function downloadVideosJson() {
-            const data = {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await StorageDB.initDB();
+            updatePreview();
+        });
+
+        function getPayload() {
+            return {
                 models: StorageDB.getModels(),
                 streams: StorageDB.getStreams(),
                 homepage_thumbnails: []
             };
-            const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
+        }
+
+        function updatePreview() {
+            const payload = getPayload();
+            document.getElementById('jsonPreview').textContent = JSON.stringify(payload, null, 4);
+        }
+
+        function downloadUpdatedGallery() {
+            const payload = getPayload();
+            const payloadString = JSON.stringify(payload, null, 8);
+
+            // Read current page HTML structure
+            let htmlContent = document.documentElement.outerHTML;
+
+            // Replace embedded database script content with current local storage data
+            const newScriptTag = `<script type="application/json" id="embedded-database">\n        ${payloadString}\n        <\/script>`;
+            htmlContent = htmlContent.replace(
+                /<script type="application\/json" id="embedded-database">[\s\S]*?<\/script>/,
+                newScriptTag
+            );
+
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'video-gallery.html';
+            a.click();
+            alert('video-gallery.html downloaded! Upload/commit this file to your repository root to trigger automated syncing of videos.json.');
+        }
+
+        function downloadVideosJson() {
+            const payload = getPayload();
+            const blob = new Blob([JSON.stringify(payload, null, 4)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
