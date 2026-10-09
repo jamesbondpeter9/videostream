@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Vault - Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Compact Navigation Header Sizing */
+        .nav-bar-compact {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 2px;
+            margin-bottom: 20px;
+            max-width: 1700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media(max-width: 900px) { .nav-bar-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+        .mondrian-nav-box {
+            height: 52px !important;
+            font-size: 0.85rem !important;
+            border-radius: 12px !important;
+        }
+
+        .vault-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(40px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8), var(--neon-glow);
+        }
+
+        .vault-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--card-border);
+        }
+
+        /* Mosaic Grid configured for 180px base row height matching index.html */
+        .vault-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-auto-rows: 180px;
+            grid-auto-flow: dense;
+            gap: 2px;
+            align-items: stretch;
+        }
+        @media(max-width: 1400px) { .vault-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media(max-width: 900px) { .vault-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media(max-width: 500px) { .vault-grid { grid-template-columns: 1fr; } }
+
+        .mondrian-card.landscape { grid-column: span 2; grid-row: span 3; }
+        .mondrian-card.portrait { grid-column: span 1; grid-row: span 2; }
+
+        .mondrian-thumb {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="site-container">
+        <!-- Top Nav Bar -->
+        <div class="nav-bar-compact">
+            <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Home</div></a>
+            <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background: #fff; color: #000;">Models</div></a>
+            <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 1.3rem; font-weight: 900;">+</div></a>
+        </div>
+
+        <div class="vault-header" id="vaultHeader">
+            <img id="vaultAvatar" src="" alt="Model" class="vault-avatar" style="display:none;">
+            <div>
+                <h1 id="vaultTitle" style="font-size: 1.5rem; font-weight: 800; color: #fff;">Loading Vault...</h1>
+                <p id="vaultSubtitle" style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Streams tagged with this model</p>
+            </div>
+        </div>
+
+        <div class="vault-grid" id="vaultGrid"></div>
+    </div>
+
+    <script src="storage.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await StorageDB.initDB();
+            const params = new URLSearchParams(window.location.search);
+            const modelName = decodeURIComponent(params.get('name') ?? '');
+            const modelThumb = decodeURIComponent(params.get('thumb') ?? '');
+
+            if (modelName) {
+                document.getElementById('vaultTitle').textContent = modelName;
+                document.title = `${modelName} - Vault`;
+            }
+            if (modelThumb) {
+                const avatar = document.getElementById('vaultAvatar');
+                avatar.src = modelThumb;
+                avatar.style.display = 'block';
+            }
+
+            const allStreams = StorageDB.getStreams();
+            // Filter streams that include this model in their models array
+            const matchedStreams = allStreams.filter(stream => stream.models && stream.models.includes(modelName));
+
+            const grid = document.getElementById('vaultGrid');
+            if (matchedStreams.length === 0) {
+                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No streams found for this model.</div>`;
+                return;
+            }
+
+            grid.innerHTML = '';
+            matchedStreams.forEach((stream, index) => {
+                const card = document.createElement('a');
+                // Find global index in total streams array to link correctly to watch.html
+                const globalIndex = allStreams.findIndex(s => s.url === stream.url && s.title === stream.title);
+                card.href = `watch.html?index=${globalIndex}`;
+                
+                const patterns = ['landscape', 'portrait', 'portrait', 'landscape'];
+                card.className = `mondrian-card ${patterns[index % patterns.length]}`;
+
+                card.innerHTML = `
+                    <div class="mondrian-thumb">
+                        ${stream.thumbnail ? `<img src="${stream.thumbnail}" alt="${stream.title}" style="object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Thumbnail</div>'}
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px 14px; font-weight: 700; font-size: 0.8rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5;">${stream.title}</div>
+                    </div>`;
+                grid.appendChild(card);
+            });
+        });
+    </script>
+</body>
+</html>
