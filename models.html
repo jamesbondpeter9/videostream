@@ -6,19 +6,10 @@
     <title>Models Directory - Portal</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Top Navigation Bar matching stream.html with Home and + side-by-side */
-        .nav-bar-compact {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 2px;
-            margin-bottom: 24px;
-        }
-
         .filter-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; justify-content: center; }
         .filter-btn { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 0.8rem; transition: all 0.2s ease; }
         .filter-btn:hover, .filter-btn.active { background: #fff; color: #000; border-color: #fff; }
         
-        /* Increased Length & Very Tiny 2px Gap */
         .models-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -31,12 +22,10 @@
         @media(max-width: 900px) { .models-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media(max-width: 500px) { .models-grid { grid-template-columns: 1fr; } }
 
-        /* Mondrian Auto-Shape Classes */
         .mondrian-card.landscape { grid-column: span 2; grid-row: span 1; }
         .mondrian-card.portrait { grid-column: span 1; grid-row: span 2; }
         .mondrian-card.square { grid-column: span 1; grid-row: span 1; }
 
-        /* Tiny + Symbol on Top-Left Corner to Update Thumbnail */
         .update-thumb-btn { 
             position: absolute; top: 10px; left: 10px; 
             background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.3); 
@@ -47,7 +36,6 @@
         }
         .mondrian-thumb:hover .update-thumb-btn { opacity: 1; }
 
-        /* Tiny Delete Symbol on Top-Right Corner */
         .delete-btn { 
             position: absolute; top: 10px; right: 10px; 
             background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.3); 
@@ -61,7 +49,6 @@
 </head>
 <body>
     <div class="site-container">
-        <!-- Top Nav Bar with Home and + cards side-by-side with 2px gap -->
         <div class="nav-bar-compact">
             <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Home</div></a>
             <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 1.4rem; font-weight: 900;">+</div></a>
@@ -72,9 +59,7 @@
             <button onclick="openAddModelModal()" class="btn-primary" style="padding: 10px 18px; font-size: 0.85rem;">+ Add Model</button>
         </div>
 
-        <!-- Letter Filter Bar -->
         <div class="filter-bar" id="filterBar"></div>
-
         <div class="models-grid" id="modelsGrid"></div>
 
         <!-- Add Model Modal -->
@@ -149,17 +134,12 @@
                 img.src = thumb;
                 img.onload = () => {
                     const shape = img.height > img.width ? 'portrait' : (img.width > img.height ? 'landscape' : 'square');
-                    StorageDB.addModel(name, thumb);
-                    const models = StorageDB.getModels();
-                    if(models.length > 0) {
-                        models[models.length - 1].shape = shape;
-                        StorageDB.saveModels(models);
-                    }
+                    StorageDB.addModel(name, thumb, shape);
                     closeAddModelModal();
                     renderModels();
                 };
                 img.onerror = () => {
-                    StorageDB.addModel(name, thumb);
+                    StorageDB.addModel(name, thumb, 'square');
                     closeAddModelModal();
                     renderModels();
                 };
@@ -214,7 +194,6 @@
             const grid = document.getElementById('modelsGrid');
             
             const modelsWithIndex = models.map((m, idx) => ({ ...m, originalIndex: idx }));
-            
             const filtered = modelsWithIndex.filter(m => {
                 if (currentLetterFilter === 'ALL') return true;
                 return m.name.toUpperCase().startsWith(currentLetterFilter);
