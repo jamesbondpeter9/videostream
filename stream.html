@@ -28,7 +28,7 @@
                     </div>
                     <div style="margin-bottom: 20px;">
                         <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Thumbnail URL (Optional)</label>
-                        <input type="text" id="streamThumbnail" placeholder="Leave blank to auto-detect YouTube thumb">
+                        <input type="text" id="streamThumbnail" placeholder="Leave blank for auto YouTube thumb">
                     </div>
                     <button type="submit" class="btn-primary" style="width: 100%;">Save Stream</button>
                 </form>
@@ -79,7 +79,7 @@
 
                 if (!title || !url) return;
                 StorageDB.addStream({ title, url, thumbnail: thumbnail || '', models: [] });
-                alert('Stream saved successfully!');
+                alert('Stream saved successfully! Visit Gallery Hub to export your updated video-gallery.html for GitHub.');
                 window.location.href = 'index.html';
             });
         });
