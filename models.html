@@ -6,7 +6,6 @@
     <title>Models Directory - Portal</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Top Navigation Header matching + Add Model button style & size */
         .top-action-bar {
             display: flex;
             gap: 12px;
@@ -37,7 +36,6 @@
         .filter-btn { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 0.8rem; transition: all 0.2s ease; }
         .filter-btn:hover, .filter-btn.active { background: #fff; color: #000; border-color: #fff; }
         
-        /* Clean Non-Overlapping Grid Sizing */
         .models-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -63,6 +61,7 @@
             width: 100%;
             height: 100%;
             border-radius: 20px;
+            cursor: pointer;
         }
 
         .update-thumb-btn { 
@@ -88,7 +87,6 @@
 </head>
 <body>
     <div class="site-container">
-        <!-- Top Action Bar with Home Button and Add Model Button side-by-side -->
         <div class="top-action-bar">
             <a href="index.html" class="home-action-btn">Home</a>
             <button onclick="openAddModelModal()" class="btn-primary" style="padding: 10px 18px; font-size: 0.85rem;">+ Add Model</button>
@@ -96,9 +94,7 @@
 
         <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 24px;">Models Directory</h1>
 
-        <!-- Letter Filter Bar -->
         <div class="filter-bar" id="filterBar"></div>
-
         <div class="models-grid" id="modelsGrid"></div>
 
         <!-- Add Model Modal -->
@@ -176,21 +172,15 @@
                 img.onload = () => {
                     const shape = img.height > img.width ? 'portrait' : (img.width > img.height ? 'landscape' : 'square');
                     StorageDB.addModel(name, thumb, shape);
-                    
-                    // Reset/refresh input fields
                     nameInput.value = '';
                     thumbInput.value = '';
-
                     closeAddModelModal();
                     renderModels();
                 };
                 img.onerror = () => {
                     StorageDB.addModel(name, thumb, 'square');
-                    
-                    // Reset/refresh input fields
                     nameInput.value = '';
                     thumbInput.value = '';
-
                     closeAddModelModal();
                     renderModels();
                 };
@@ -262,14 +252,18 @@
                 card.className = `mondrian-card ${shape}`;
 
                 card.innerHTML = `
-                    <div class="mondrian-thumb">
-                        <button type="button" class="update-thumb-btn" onclick="openUpdateThumbModal(${model.originalIndex})" title="Update thumbnail">+</button>
-                        <button type="button" class="delete-btn" onclick="openDeleteModal(${model.originalIndex})" title="Delete model">&times;</button>
+                    <div class="mondrian-thumb" onclick="openVault('${encodeURIComponent(model.name)}', '${encodeURIComponent(model.thumbnail)}')">
+                        <button type="button" class="update-thumb-btn" onclick="event.stopPropagation(); openUpdateThumbModal(${model.originalIndex})" title="Update thumbnail">+</button>
+                        <button type="button" class="delete-btn" onclick="event.stopPropagation(); openDeleteModal(${model.originalIndex})" title="Delete model">&times;</button>
                         ${model.thumbnail ? `<img src="${model.thumbnail}" alt="${model.name}" style="object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Photo</div>'}
                         <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 14px 16px; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 60%, transparent 100%); font-weight: 700; font-size: 0.85rem; color: #fff; z-index: 5;">${model.name}</div>
                     </div>`;
                 grid.appendChild(card);
             });
+        }
+
+        function openVault(name, thumb) {
+            window.location.href = `vault.html?name=${name}&thumb=${thumb}`;
         }
 
         function openUpdateThumbModal(index) {
