@@ -14,7 +14,7 @@
         .models-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            grid-auto-rows: 280px;
+            grid-auto-rows: 340px;
             grid-auto-flow: dense;
             gap: 2px;
             align-items: stretch;
@@ -199,7 +199,6 @@
             const models = StorageDB.getModels();
             const grid = document.getElementById('modelsGrid');
             
-            // Map original absolute indexes before filtering so actions target the correct model item
             const modelsWithIndex = models.map((m, idx) => ({ ...m, originalIndex: idx }));
             
             const filtered = modelsWithIndex.filter(m => {
@@ -252,7 +251,9 @@
 
         function confirmDeleteModel() {
             if (modelIndexToDelete !== null) {
-                StorageDB.removeModel(modelIndexToDelete);
+                const models = StorageDB.getModels();
+                models.splice(modelIndexToDelete, 1);
+                StorageDB.saveModels(models);
                 renderModels();
             }
             closeDeleteModal();
