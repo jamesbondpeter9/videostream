@@ -3,86 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Gallery Manager - Portal</title>
+    <title>Gallery Hub - Portal</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .gallery-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            align-items: start;
-        }
-        @media(max-width: 900px) {
-            .gallery-layout { grid-template-columns: 1fr; }
-        }
-        .config-box {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 24px;
-            backdrop-filter: blur(40px);
-            box-shadow: 0 35px 70px rgba(0,0,0,0.95), var(--neon-glow);
-        }
-    </style>
 </head>
 <body>
     <div class="site-container">
         <div class="nav-bar-compact" style="display: flex; gap: 8px; margin-bottom: 24px;">
-            <a href="index.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;"><div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">Home</div></a>
-            <a href="models.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;"><div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">Models</div></a>
-            <a href="stream.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;"><div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--card-border); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;">+ Add</div></a>
-            <a href="video-gallery.html" class="mondrian-nav-card" style="width: 110px; text-decoration: none;"><div class="mondrian-nav-box" style="aspect-ratio: 2.8 / 1; max-height: 42px; font-size: 0.75rem; border-radius: 10px; background: #fff; border: 1px solid #fff; color: #000; display: flex; align-items: center; justify-content: center; font-weight: 700;">Gallery Hub</div></a>
+            <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Home</div></a>
+            <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Models</div></a>
+            <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box">+ Add</div></a>
+            <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background:#fff; color:#000;">Gallery Hub</div></a>
         </div>
-
-        <header style="margin-bottom: 24px;">
-            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">Video Gallery Manager</h1>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Automated sync dashboard connected directly to your repository database.</p>
-        </header>
-
-        <div class="gallery-layout">
-            <div class="config-box">
-                <h2 style="font-size: 1rem; font-weight: 700; margin-bottom: 14px; color: var(--text-main);">GitHub Credentials</h2>
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <div>
-                        <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; font-weight:600;">GitHub Username / Owner</label>
-                        <input type="text" id="ghOwner" placeholder="e.g. username">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; font-weight:600;">Repository Name</label>
-                        <input type="text" id="ghRepo" placeholder="e.g. video-portal">
-                    </div>
-                    <div>
-                        <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px; font-weight:600;">Personal Access Token (repo scope)</label>
-                        <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx">
-                    </div>
-                    <button onclick="saveSettings()" class="btn-primary" style="margin-top: 4px; font-size: 0.85rem; padding: 10px;">Save Credentials Locally</button>
-                </div>
-            </div>
+        <div class="control-panel" style="max-width: 600px; margin: 0 auto; text-align: center;">
+            <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 12px;">Gallery Hub</h1>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;">Export your portal database instantly to update your repository database file.</p>
+            <button onclick="downloadVideosJson()" class="btn-primary" style="width: 100%;">Download Updated videos.json</button>
         </div>
-
-        <!-- EMBEDDED JSON DATABASE SOURCE OF TRUTH -->
-        <script type="application/json" id="embedded-database">
-        {
-            "models": [],
-            "streams": [],
-            "homepage_thumbnails": []
-        }
-        </script>
     </div>
-
     <script src="storage.js"></script>
     <script>
-        window.onload = async function() {
-            if(localStorage.getItem('ghOwner')) document.getElementById('ghOwner').value = localStorage.getItem('ghOwner');
-            if(localStorage.getItem('ghRepo')) document.getElementById('ghRepo').value = localStorage.getItem('ghRepo');
-            if(localStorage.getItem('ghToken')) document.getElementById('ghToken').value = localStorage.getItem('ghToken');
-            await StorageDB.initDB();
-        }
-        function saveSettings() {
-            localStorage.setItem('ghOwner', document.getElementById('ghOwner').value.trim());
-            localStorage.setItem('ghRepo', document.getElementById('ghRepo').value.trim());
-            localStorage.setItem('ghToken', document.getElementById('ghToken').value.trim());
-            alert('Credentials saved to browser storage!');
+        function downloadVideosJson() {
+            const data = {
+                models: StorageDB.getModels(),
+                streams: StorageDB.getStreams(),
+                homepage_thumbnails: []
+            };
+            const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'videos.json';
+            a.click();
         }
     </script>
 </body>
