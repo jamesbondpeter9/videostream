@@ -82,9 +82,11 @@
 
         <!-- Two Large Curved Square Thumbnails -->
         <div class="featured-squares-grid" id="featuredSquares">
-            <!-- Left Square (Albums - text removed) -->
+            <!-- Left Square (Albums - connected to albums.html) -->
             <div class="featured-square-card">
-                <div id="featThumb1" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;position:relative;"></div>
+                <div id="featThumb1" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;position:relative;">
+                    <a id="albumsTagLink" href="#" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.4rem; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,0.9); z-index: 5; text-decoration: none;">Albums</a>
+                </div>
             </div>
             <!-- Right Square (Videos - connected to videotag.html) -->
             <div class="featured-square-card">
@@ -106,34 +108,37 @@
 
             if (modelName) {
                 document.title = `${modelName} - Vault`;
-                // Connect the right "Videos" square to videotag.html with the model's name
+                // Connect the left "Albums" square to albums.html
+                document.getElementById('albumsTagLink').href = `albums.html?name=${encodeURIComponent(modelName)}`;
+                // Connect the right "Videos" square to videotag.html
                 document.getElementById('videoTagLink').href = `videotag.html?name=${encodeURIComponent(modelName)}`;
             }
 
             const allStreams = StorageDB.getStreams();
             const matchedStreams = allStreams.filter(stream => stream.models && stream.models.includes(modelName));
 
-            // Populate the Left Square (Albums) with the first stream if available
-            const feat1 = document.getElementById('featThumb1');
+            // Optional background thumbnails for left and right boxes if items exist
+            const feat1AlbumsLink = document.getElementById('albumsTagLink');
             if (matchedStreams.length > 0) {
                 const s1 = matchedStreams[0];
-                const gIdx1 = allStreams.findIndex(s => s.url === s1.url && s.title === s1.title);
-                feat1.innerHTML = `
-                    <a href="watch.html?index=${gIdx1}" style="position:absolute; inset:0; display:block;">
-                        ${s1.thumbnail ? `<img src="${s1.thumbnail}" alt="${s1.title}" style="object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0;">` : ''}
-                    </a>`;
+                if (s1.thumbnail) {
+                    const bgImg1 = document.createElement('img');
+                    bgImg1.src = s1.thumbnail;
+                    bgImg1.alt = s1.title;
+                    bgImg1.style.cssText = "object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0; z-index: 1;";
+                    feat1AlbumsLink.prepend(bgImg1);
+                }
             }
 
-            // Optional: If you want the right "Videos" box to also show a background thumbnail from the second stream (while keeping the "Videos" text overlay)
             const feat2VideoLink = document.getElementById('videoTagLink');
             if (matchedStreams.length > 1) {
                 const s2 = matchedStreams[1];
                 if (s2.thumbnail) {
-                    const bgImg = document.createElement('img');
-                    bgImg.src = s2.thumbnail;
-                    bgImg.alt = s2.title;
-                    bgImg.style.cssText = "object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0; z-index: 1;";
-                    feat2VideoLink.prepend(bgImg);
+                    const bgImg2 = document.createElement('img');
+                    bgImg2.src = s2.thumbnail;
+                    bgImg2.alt = s2.title;
+                    bgImg2.style.cssText = "object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0; z-index: 1;";
+                    feat2VideoLink.prepend(bgImg2);
                 }
             }
 
