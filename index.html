@@ -6,56 +6,64 @@
     <title>Video Portal - Home</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .nav-bar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; margin-bottom: 24px; }
-        @media(max-width: 900px) { .nav-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-        @media(max-width: 500px) { .nav-bar { grid-template-columns: 1fr; } }
+        /* Slightly increased gap for top navigation bar */
+        .nav-bar-compact {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        @media(max-width: 900px) { .nav-bar-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+        /* Compact Grid Sizing for Homepage Thumbnails */
+        .home-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            grid-auto-rows: 190px;
+            grid-auto-flow: dense;
+            gap: 12px;
+            align-items: stretch;
+        }
+        @media(max-width: 1400px) { .home-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+        @media(max-width: 1000px) { .home-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media(max-width: 700px) { .home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     </style>
 </head>
 <body>
     <div class="site-container">
-        <!-- Top Navigation with precise Mondrian sizing -->
-        <div class="nav-bar">
+        <div class="nav-bar-compact">
             <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background: #fff; color: #000;">Home</div></a>
             <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Models</div></a>
-            <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box">+ Add</div></a>
-            <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Gallery Hub</div></a>
+            <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 1.4rem; font-weight: 900;">+</div></a>
+            <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 1.3rem; font-weight: 900;" title="Gallery Hub Sync">↓</div></a>
         </div>
-
-        <!-- Mondrian Puzzle Grid with alternating landscape and portrait layouts -->
-        <div class="mondrian-grid" id="streamsGrid"></div>
+        <div class="home-grid" id="streamsGrid"></div>
     </div>
-
+    
     <script src="storage.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
             const streams = StorageDB.getStreams();
             const grid = document.getElementById('streamsGrid');
-
             if (streams.length === 0) {
-                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No streams found. Click "+ Add" to create your first stream!</div>`;
+                grid.innerHTML = `<div style="grid-column: span 5; text-align: center; color: var(--text-muted); padding: 60px;">No streams found. Click "+" to create your first stream!</div>`;
                 return;
             }
-
             grid.innerHTML = '';
             streams.forEach((stream, index) => {
                 const card = document.createElement('a');
                 card.href = stream.url;
                 card.target = '_blank';
                 
-                // Classic Mondrian pattern distribution (alternating landscape, portrait, and wide spans)
-                if (index % 5 === 0) {
-                    card.className = 'mondrian-card landscape';
-                } else if (index % 3 === 0) {
-                    card.className = 'mondrian-card portrait';
-                } else {
-                    card.className = 'mondrian-card landscape';
-                }
+                // Varied Mondrian puzzle sizing pattern for smaller compact grid
+                const patterns = ['square', 'landscape', 'square', 'portrait'];
+                card.className = `mondrian-card ${patterns[index % patterns.length]}`;
 
                 card.innerHTML = `
                     <div class="mondrian-thumb">
                         ${stream.thumbnail ? `<img src="${stream.thumbnail}" alt="${stream.title}">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Thumbnail</div>'}
-                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 14px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.9rem; color: #fff;">${stream.title}</div>
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 10px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.8rem; color: #fff;">${stream.title}</div>
                     </div>`;
                 grid.appendChild(card);
             });
