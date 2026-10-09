@@ -1,20 +1,34 @@
-const fs = require('fs');
-const path = require('path');
+name: Update Videos JSON Database
 
-const filePath = path.join(__dirname, '../videos.json');
-let dbData = { models: [], streams: [], homepage_thumbnails: [] };
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'videos.json'
+      - 'scripts/**'
 
-if (fs.existsSync(filePath)) {
-    try {
-        dbData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    } catch (e) {
-        console.log('Could not parse existing videos.json, starting fresh.');
-    }
-}
+jobs:
+  validate-and-update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
-if (!dbData.models) dbData.models = [];
-if (!dbData.streams) dbData.streams = [];
-if (!dbData.homepage_thumbnails) dbData.homepage_thumbnails = [];
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-fs.writeFileSync(filePath, JSON.stringify(dbData, null, 4), 'utf8');
-console.log('Successfully updated and verified videos.json schema!');
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Run Database Validation Script
+        run: node scripts/update-videos-json.js
+
+      - name: Commit and push changes if any
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Automated schema sync for videos.json [skip ci]"
+          file_pattern: "videos.json"
