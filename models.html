@@ -6,28 +6,33 @@
     <title>Models Directory - Portal</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .filter-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; justify-content: center; }
+        .filter-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; justify-content: center; }
         .filter-btn { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 0.8rem; transition: all 0.2s ease; }
         .filter-btn:hover, .filter-btn.active { background: #fff; color: #000; border-color: #fff; }
         
-        /* Taller Grid Sizing for Models Directory */
+        /* Reduced Gap & Tight Mosaic Grid for Models Directory */
         .models-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            grid-auto-rows: 320px;
+            grid-auto-rows: 200px;
             grid-auto-flow: dense;
-            gap: 16px;
+            gap: 6px;
             align-items: stretch;
         }
         @media(max-width: 1400px) { .models-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
         @media(max-width: 900px) { .models-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media(max-width: 500px) { .models-grid { grid-template-columns: 1fr; } }
 
+        /* Mondrian Auto-Shape Classes */
+        .mondrian-card.landscape { grid-column: span 2; grid-row: span 1; }
+        .mondrian-card.portrait { grid-column: span 1; grid-row: span 2; }
+        .mondrian-card.square { grid-column: span 1; grid-row: span 1; }
+
         /* Tiny + Symbol on Top-Left Corner to Update Thumbnail */
         .update-thumb-btn { 
-            position: absolute; top: 10px; left: 10px; 
-            background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.3); 
-            color: #fff; width: 22px; height: 22px; border-radius: 50%; 
+            position: absolute; top: 8px; left: 8px; 
+            background: rgba(0,0,0,0.75); border: 1px solid rgba(255,255,255,0.3); 
+            color: #fff; width: 24px; height: 24px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
             font-size: 0.85rem; font-weight: bold; cursor: pointer; 
             opacity: 0; transition: opacity 0.2s ease; z-index: 10; 
@@ -36,11 +41,11 @@
 
         /* Tiny Delete Symbol on Top-Right Corner */
         .delete-btn { 
-            position: absolute; top: 10px; right: 10px; 
-            background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.3); 
-            color: #ff4d4d; width: 22px; height: 22px; border-radius: 50%; 
+            position: absolute; top: 8px; right: 8px; 
+            background: rgba(0,0,0,0.75); border: 1px solid rgba(255,255,255,0.3); 
+            color: #ff4d4d; width: 24px; height: 24px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 0.7rem; font-weight: bold; cursor: pointer; 
+            font-size: 0.75rem; font-weight: bold; cursor: pointer; 
             opacity: 0; transition: opacity 0.2s ease; z-index: 10; 
         }
         .mondrian-thumb:hover .delete-btn { opacity: 1; }
@@ -125,9 +130,27 @@
                 const name = document.getElementById('modelName').value.trim();
                 const thumb = document.getElementById('modelThumb').value.trim();
                 if (!name || !thumb) return;
-                StorageDB.addModel(name, thumb);
-                closeAddModelModal();
-                renderModels();
+
+                // Pre-load image to determine auto-shape orientation
+                const img = new Image();
+                img.src = thumb;
+                img.onload = () => {
+                    const shape = img.height > img.width ? 'portrait' : (img.width > img.height ? 'landscape' : 'square');
+                    StorageDB.addModel(name, thumb);
+                    // Tag orientation onto the newly added model
+                    const models = StorageDB.getModels();
+                    if(models.length > 0) {
+                        models[models.length - 1].shape = shape;
+                        StorageDB.saveModels(models);
+                    }
+                    closeAddModelModal();
+                    renderModels();
+                };
+                img.onerror = () => {
+                    StorageDB.addModel(name, thumb);
+                    closeAddModelModal();
+                    renderModels();
+                };
             });
 
             document.getElementById('updateThumbForm').addEventListener('submit', (e) => {
@@ -136,9 +159,20 @@
                 if (modelIndexToUpdateThumb !== null && newUrl) {
                     const models = StorageDB.getModels();
                     if (models[modelIndexToUpdateThumb]) {
-                        models[modelIndexToUpdateThumb].thumbnail = newUrl;
-                        StorageDB.saveModels(models);
-                        renderModels();
+                        const img = new Image();
+                        img.src = newUrl;
+                        img.onload = () => {
+                            const shape = img.height > img.width ? 'portrait' : (img.width > img.height ? 'landscape' : 'square');
+                            models[modelIndexToUpdateThumb].thumbnail = newUrl;
+                            models[modelIndexToUpdateThumb].shape = shape;
+                            StorageDB.saveModels(models);
+                            renderModels();
+                        };
+                        img.onerror = () => {
+                            models[modelIndexToUpdateThumb].thumbnail = newUrl;
+                            StorageDB.saveModels(models);
+                            renderModels();
+                        };
                     }
                 }
                 closeUpdateThumbModal();
@@ -182,16 +216,16 @@
                 const originalIndex = models.findIndex(m => m.createdAt === model.createdAt);
                 const card = document.createElement('div');
                 
-                // Taller Mondrian card pattern sizing
-                const patterns = ['portrait', 'landscape', 'square'];
-                card.className = `mondrian-card ${patterns[originalIndex % patterns.length]}`;
+                // Use stored auto-shape or fallback to pattern
+                const shape = model.shape || (originalIndex % 2 === 0 ? 'portrait' : 'landscape');
+                card.className = `mondrian-card ${shape}`;
 
                 card.innerHTML = `
                     <div class="mondrian-thumb">
                         <button class="update-thumb-btn" onclick="openUpdateThumbModal(${originalIndex})" title="Update thumbnail">+</button>
                         <button class="delete-btn" onclick="openDeleteModal(${originalIndex})" title="Delete model">&times;</button>
                         ${model.thumbnail ? `<img src="${model.thumbnail}" alt="${model.name}">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Photo</div>'}
-                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.85rem; color: #fff;">${model.name}</div>
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 10px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); font-weight: 700; font-size: 0.8rem; color: #fff;">${model.name}</div>
                     </div>`;
                 grid.appendChild(card);
             });
