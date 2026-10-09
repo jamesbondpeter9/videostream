@@ -21,7 +21,7 @@
             border-radius: 12px !important;
         }
 
-        /* Mosaic Grid with Shorter Row Base */
+        /* Mosaic Grid with Uniform Vertical Sizing */
         .home-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -34,10 +34,11 @@
         @media(max-width: 900px) { .home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media(max-width: 500px) { .home-grid { grid-template-columns: 1fr; } }
 
-        /* Increased Width and Reduced Length specifically for Landscape Thumbnails */
-        .mondrian-card.landscape { grid-column: span 3; grid-row: span 1; }
-        .mondrian-card.portrait { grid-column: span 1; grid-row: span 2; }
-        .mondrian-card.square { grid-column: span 1; grid-row: span 1; }
+        /* Standardized vertical layout: column-span 1, row-span 2 */
+        .mondrian-card { 
+            grid-column: span 1; 
+            grid-row: span 2; 
+        }
 
         .mondrian-thumb {
             display: flex;
@@ -74,9 +75,7 @@
             streams.forEach((stream, index) => {
                 const card = document.createElement('a');
                 card.href = `watch.html?index=${index}`;
-                
-                const patterns = ['landscape', 'portrait', 'square', 'landscape'];
-                card.className = `mondrian-card ${patterns[index % patterns.length]}`;
+                card.className = 'mondrian-card';
 
                 card.innerHTML = `
                     <div class="mondrian-thumb">
