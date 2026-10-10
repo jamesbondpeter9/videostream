@@ -6,12 +6,14 @@
     <title>Video Portal - Home</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Compact Navigation Header Sizing */
         .nav-bar-compact {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 2px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            max-width: 1700px;
+            margin-left: auto;
+            margin-right: auto;
         }
         @media(max-width: 900px) { .nav-bar-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
@@ -21,30 +23,22 @@
             border-radius: 12px !important;
         }
 
-        /* Mosaic Grid configured for 180px base row height */
-        .home-grid {
+        .index-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
             grid-auto-rows: 180px;
             grid-auto-flow: dense;
             gap: 2px;
             align-items: stretch;
+            max-width: 1700px;
+            margin: 0 auto;
         }
-        @media(max-width: 1400px) { .home-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-        @media(max-width: 900px) { .home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-        @media(max-width: 500px) { .home-grid { grid-template-columns: 1fr; } }
+        @media(max-width: 1400px) { .index-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media(max-width: 900px) { .index-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media(max-width: 500px) { .index-grid { grid-template-columns: 1fr; } }
 
-        /* Landscape: span 2 columns wide x 3 rows high */
-        .mondrian-card.landscape { 
-            grid-column: span 2; 
-            grid-row: span 3; 
-        }
-
-        /* Portrait: span 1 column wide x 2 rows high */
-        .mondrian-card.portrait { 
-            grid-column: span 1; 
-            grid-row: span 2; 
-        }
+        .mondrian-card.landscape { grid-column: span 2; grid-row: span 3; }
+        .mondrian-card.portrait { grid-column: span 1; grid-row: span 2; }
 
         .mondrian-thumb {
             display: flex;
@@ -56,33 +50,38 @@
 </head>
 <body>
     <div class="site-container">
-        <!-- Compact Top Nav Bar -->
+        <!-- Top Navigation Bar -->
         <div class="nav-bar-compact">
             <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background: #fff; color: #000;">Home</div></a>
             <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Models</div></a>
-            <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 1.3rem; font-weight: 900;">+</div></a>
-            <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 1.2rem; font-weight: 900;" title="Gallery Hub Sync">↓</div></a>
+            <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 1.4rem; font-weight: 900;">+</div></a>
+            <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 0.8rem;">Hub</div></a>
         </div>
-        
-        <div class="home-grid" id="streamsGrid"></div>
+
+        <div class="index-grid" id="indexGrid"></div>
     </div>
-    
+
     <script src="storage.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
-            const streams = StorageDB.getStreams();
-            const grid = document.getElementById('streamsGrid');
-            if (streams.length === 0) {
-                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No streams found. Click "+" to create your first stream!</div>`;
+            const allStreams = StorageDB.getStreams();
+            
+            // Exclude photo items so only video streams show on homepage
+            const videoStreams = allStreams.filter(stream => !stream.isPhoto);
+
+            const grid = document.getElementById('indexGrid');
+            if (videoStreams.length === 0) {
+                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No video streams found. Click '+' to add new streams.</div>`;
                 return;
             }
+
             grid.innerHTML = '';
-            streams.forEach((stream, index) => {
+            videoStreams.forEach((stream, index) => {
                 const card = document.createElement('a');
-                card.href = `watch.html?index=${index}`;
-                
-                // Alternating pattern between landscape and portrait sizes
+                const globalIndex = allStreams.findIndex(s => s.url === stream.url && s.title === stream.title);
+                card.href = `watch.html?index=${globalIndex}`;
+
                 const patterns = ['landscape', 'portrait', 'portrait', 'landscape'];
                 card.className = `mondrian-card ${patterns[index % patterns.length]}`;
 
