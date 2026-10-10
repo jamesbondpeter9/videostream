@@ -6,22 +6,6 @@
     <title>Model Albums - Portal</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .nav-bar-compact {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 2px;
-            margin-bottom: 20px;
-            max-width: 1700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .mondrian-nav-box {
-            height: 52px !important;
-            font-size: 0.85rem !important;
-            border-radius: 12px !important;
-        }
-
         .tag-header {
             background: var(--card-bg);
             backdrop-filter: blur(40px);
@@ -30,6 +14,9 @@
             padding: 24px 32px;
             margin-bottom: 24px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.8), var(--neon-glow);
+            max-width: 1700px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .tag-grid {
@@ -39,6 +26,8 @@
             grid-auto-flow: dense;
             gap: 2px;
             align-items: stretch;
+            max-width: 1700px;
+            margin: 0 auto;
         }
         @media(max-width: 1400px) { .tag-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
         @media(max-width: 900px) { .tag-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -57,15 +46,9 @@
 </head>
 <body>
     <div class="site-container">
-        <!-- Top Nav Bar (Home & Models) -->
-        <div class="nav-bar-compact">
-            <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Home</div></a>
-            <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background: #fff; color: #000;">Models</div></a>
-        </div>
-
         <div class="tag-header">
             <h1 id="tagTitle" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Model Albums</h1>
-            <p id="tagSubtitle" style="color: var(--text-muted); font-size: 0.85rem;">Stored photo folders featuring this model</p>
+            <p id="tagSubtitle" style="color: var(--text-muted); font-size: 0.85rem;">Automatically generated photo folders</p>
         </div>
 
         <div class="tag-grid" id="albumGrid"></div>
@@ -85,16 +68,20 @@
             }
 
             const allStreams = StorageDB.getStreams();
-            // Filter strictly for photos added via "Add New Photo" tagged with this model
-            const matchedPhotos = allStreams.filter(item => item.isPhoto && item.models && item.models.includes(modelName));
+            const matchedPhotos = allStreams.filter(item => {
+                if (!item.isPhoto) return false;
+                if (modelName) {
+                    return item.models && item.models.includes(modelName);
+                }
+                return true;
+            });
 
             const grid = document.getElementById('albumGrid');
             if (matchedPhotos.length === 0) {
-                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No photo albums found for this model.</div>`;
+                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No photo albums found.</div>`;
                 return;
             }
 
-            // Group photos by their stored folder name
             const folders = {};
             matchedPhotos.forEach(photo => {
                 const folderName = photo.folder || photo.title.replace(/\s\(\d+\)$/, '') || 'General Album';
@@ -160,15 +147,12 @@
             `;
             modal.style.display = 'block';
 
-            // Bind click handlers to trigger photoviewer.js for lightbox viewing
             const thumbElements = modal.querySelectorAll('.album-thumb-item');
             thumbElements.forEach((el, idx) => {
                 el.onclick = () => {
                     if (window.PhotoViewer && typeof window.PhotoViewer.open === 'function') {
-                        // Pass items array to photoviewer.js
                         window.PhotoViewer.open(items, idx);
                     } else {
-                        // Fallback open direct image in new tab if viewer script is detached
                         window.open(items[idx].url, '_blank');
                     }
                 };
