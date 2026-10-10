@@ -67,8 +67,13 @@
             await StorageDB.initDB();
             const allStreams = StorageDB.getStreams();
             
-            // Exclude photo items so only video streams show on homepage
-            const videoStreams = allStreams.filter(stream => !stream.isPhoto);
+            // Robust filter to exclude all photos, folders, and image links from the homepage
+            const videoStreams = allStreams.filter(stream => {
+                if (stream.isPhoto || stream.folder) return false;
+                const url = (stream.url || '').toLowerCase();
+                if (url.match(/\.(png|jpg|jpeg|webp|gif|bmp)(\?.*)?$/i)) return false;
+                return true;
+            });
 
             const grid = document.getElementById('indexGrid');
             if (videoStreams.length === 0) {
