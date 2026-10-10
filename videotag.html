@@ -97,7 +97,7 @@
 
             const allStreams = StorageDB.getStreams();
             
-            // Filter strictly for video streams (excluding photos)
+            // STRICT FILTER: Exclude anything marked as photo or folder
             const videoStreams = allStreams.filter(item => {
                 if (item.isPhoto || item.folder) return false;
                 if (modelName) {
