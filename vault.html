@@ -109,13 +109,13 @@
             <p style="color: var(--text-muted); font-size: 0.85rem;">Select content type to browse</p>
         </div>
 
-        <!-- Restored Two Large Thumbnails Grid -->
+        <!-- Restored Dual-Card Mondrian Thumbnail Layout -->
         <div class="vault-dual-grid">
             <a id="videosCardBtn" href="videotag.html" class="vault-thumb-card">
                 <img id="videosCoverImg" src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=800&q=80" alt="Videos">
                 <div class="vault-card-overlay"></div>
                 <div class="vault-card-content">
-                    <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; tracking-wide: 2px; color: var(--text-muted); margin-bottom: 6px;">Collection</div>
+                    <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 6px;">Collection</div>
                     <h2 style="font-size: 2rem; font-weight: 900; color: #fff; margin: 0;">🎥 Videos</h2>
                     <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px;">Browse video streams tagged for this model</p>
                 </div>
@@ -125,9 +125,9 @@
                 <img id="albumsCoverImg" src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80" alt="Albums">
                 <div class="vault-card-overlay"></div>
                 <div class="vault-card-content">
-                    <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; tracking-wide: 2px; color: var(--text-muted); margin-bottom: 6px;">Collection</div>
+                    <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 6px;">Collection</div>
                     <h2 style="font-size: 2rem; font-weight: 900; color: #fff; margin: 0;">📁 Albums</h2>
-                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px;">View photo galleries and photo folders</p>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px;">View photo galleries and album folders</p>
                 </div>
             </a>
         </div>
@@ -147,9 +147,9 @@
                 document.getElementById('videosCardBtn').href = `videotag.html?name=${encodeURIComponent(modelName)}`;
                 document.getElementById('albumsCardBtn').href = `albums.html?name=${encodeURIComponent(modelName)}`;
 
-                // Dynamically update cover image if content exists
+                // Dynamically fetch and display actual thumbnails for cover cards if available
                 const allStreams = StorageDB.getStreams();
-                const modelVideos = allStreams.filter(s => !s.isPhoto && s.models && s.models.map(m => m.toLowerCase()).includes(modelName.toLowerCase()));
+                const modelVideos = allStreams.filter(s => !s.isPhoto && !s.folder && s.models && s.models.map(m => m.toLowerCase()).includes(modelName.toLowerCase()));
                 const modelPhotos = allStreams.filter(s => s.isPhoto && s.models && s.models.map(m => m.toLowerCase()).includes(modelName.toLowerCase()));
 
                 if (modelVideos.length > 0 && modelVideos[0].thumbnail) {
