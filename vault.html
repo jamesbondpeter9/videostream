@@ -6,6 +6,27 @@
     <title>Model Vault - Portal</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        .nav-bar-compact {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 2px;
+            margin-bottom: 24px;
+            max-width: 1700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media(max-width: 900px) { .nav-bar-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+        .mondrian-nav-box {
+            height: 52px !important;
+            font-size: 0.85rem !important;
+            border-radius: 12px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
         .vault-header {
             background: var(--card-bg);
             backdrop-filter: blur(40px);
@@ -22,12 +43,20 @@
 </head>
 <body>
     <div class="site-container">
+        <!-- Restored Top Navigation Bar -->
+        <div class="nav-bar-compact">
+            <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Home</div></a>
+            <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Models</div></a>
+            <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 1.4rem; font-weight: 900;">+</div></a>
+            <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 0.8rem;">Hub</div></a>
+        </div>
+
         <div class="vault-header">
             <h1 id="vaultTitle" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Model Vault</h1>
-            <p style="color: var(--text-muted); font-size: 0.85rem;">Integrated media and photo folders</p>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Integrated media streams and photo folders</p>
         </div>
-        <div style="max-width: 1700px; margin: 0 auto; text-align: center;">
-            <a href="albums.html" class="btn-primary" style="display:inline-block; padding:12px 24px; text-decoration:none;">View All Photo Albums</a>
+        <div style="max-width: 1700px; margin: 0 auto; text-align: center; display: flex; gap: 16px; justify-content: center;">
+            <a id="viewAlbumsBtn" href="albums.html" class="btn-primary" style="display:inline-block; padding:12px 24px; text-decoration:none;">View Model Albums</a>
         </div>
     </div>
     <script src="storage.js"></script>
@@ -35,10 +64,11 @@
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
             const params = new URLSearchParams(window.location.search);
-            const modelName = decodeURIComponent(params.get('name') ?? '');
+            const modelName = decodeURIComponent(params.get('name') ?? '').trim();
             if (modelName) {
                 document.getElementById('vaultTitle').textContent = `${modelName} - Vault`;
                 document.title = `${modelName} Vault - Portal`;
+                document.getElementById('viewAlbumsBtn').href = `albums.html?name=${encodeURIComponent(modelName)}`;
             }
         });
     </script>
