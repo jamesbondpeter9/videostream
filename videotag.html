@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Model Albums - Portal</title>
+    <title>Model Videos - Portal</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .nav-bar-compact {
@@ -76,15 +76,14 @@
         </div>
 
         <div class="tag-header">
-            <h1 id="tagTitle" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Model Albums</h1>
-            <p id="tagSubtitle" style="color: var(--text-muted); font-size: 0.85rem;">Photo folders featuring this model</p>
+            <h1 id="tagTitle" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Model Videos</h1>
+            <p id="tagSubtitle" style="color: var(--text-muted); font-size: 0.85rem;">Video streams featuring this model</p>
         </div>
 
-        <div class="tag-grid" id="albumGrid"></div>
+        <div class="tag-grid" id="videoGrid"></div>
     </div>
 
     <script src="storage.js"></script>
-    <script src="photoviewer.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
@@ -92,67 +91,41 @@
             const modelName = decodeURIComponent(params.get('name') ?? '').trim();
 
             if (modelName) {
-                document.getElementById('tagTitle').textContent = `${modelName} - Albums`;
-                document.title = `${modelName} Albums - Portal`;
+                document.getElementById('tagTitle').textContent = `${modelName} - Videos`;
+                document.title = `${modelName} Videos - Portal`;
             }
 
             const allStreams = StorageDB.getStreams();
             
-            // Filter strictly for saved photos (`isPhoto === true`)
-            const matchedPhotos = allStreams.filter(item => {
-                if (!item.isPhoto) return false;
+            // Filter strictly for video streams (excluding photos)
+            const videoStreams = allStreams.filter(item => {
+                if (item.isPhoto || item.folder) return false;
                 if (modelName) {
                     return item.models && item.models.map(m => m.toLowerCase()).includes(modelName.toLowerCase());
                 }
                 return true;
             });
 
-            const grid = document.getElementById('albumGrid');
-            if (matchedPhotos.length === 0) {
-                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No photo albums found for this model.</div>`;
+            const grid = document.getElementById('videoGrid');
+            if (videoStreams.length === 0) {
+                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No video streams found for this model.</div>`;
                 return;
             }
 
-            // Group photos by folder name
-            const folders = {};
-            matchedPhotos.forEach(photo => {
-                const folderName = photo.folder || photo.title.replace(/\s\(\d+\)$/, '') || 'General Album';
-                if (!folders[folderName]) {
-                    folders[folderName] = [];
-                }
-                folders[folderName].push(photo);
-            });
-
             grid.innerHTML = '';
-            const folderNames = Object.keys(folders);
-            folderNames.forEach((folderName, index) => {
-                const folderItems = folders[folderName];
-                const coverThumb = folderItems[0].thumbnail || folderItems[0].url;
+            videoStreams.forEach((stream, index) => {
+                const card = document.createElement('a');
+                const globalIndex = allStreams.findIndex(s => s.url === stream.url && s.title === stream.title);
+                card.href = `watch.html?index=${globalIndex}`;
 
-                const card = document.createElement('div');
                 const patterns = ['landscape', 'portrait', 'portrait', 'landscape'];
                 card.className = `mondrian-card ${patterns[index % patterns.length]}`;
-                card.style.cursor = 'pointer';
 
                 card.innerHTML = `
-                    <div class="mondrian-thumb" style="width:100%; height:100%; position:relative;">
-                        ${coverThumb ? `<img src="${coverThumb}" alt="${folderName}" style="object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Cover</div>'}
-                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px 14px; font-weight: 700; font-size: 0.85rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5; background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);">
-                            📁 ${folderName} <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">(${folderItems.length})</span>
-                        </div>
+                    <div class="mondrian-thumb">
+                        ${stream.thumbnail ? `<img src="${stream.thumbnail}" alt="${stream.title}" style="object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Thumbnail</div>'}
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px 14px; font-weight: 700; font-size: 0.8rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5;">${stream.title}</div>
                     </div>`;
-
-                // Explicitly bind Lightbox viewer and stop any propagation to prevent external links or watch.html redirection
-                card.onclick = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (window.PhotoViewer && typeof window.PhotoViewer.open === 'function') {
-                        window.PhotoViewer.open(folderItems, 0);
-                    } else {
-                        window.open(folderItems[0].url, '_blank');
-                    }
-                };
-
                 grid.appendChild(card);
             });
         });
