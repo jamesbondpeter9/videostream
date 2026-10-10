@@ -86,39 +86,6 @@
             </div>
         </div>
 
-        <!-- DUPLICATE ADD STREAM BOX -->
-        <div id="streamSectionDuplicate" class="stream-layout-container" style="margin-top: 2px;">
-            <div class="control-panel">
-                <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 20px;">Add New Stream</h2>
-                <form id="streamFormDup">
-                    <div style="margin-bottom: 16px;">
-                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Stream Title</label>
-                        <input type="text" id="streamTitleDup" required placeholder="Enter stream title">
-                    </div>
-                    <div style="margin-bottom: 16px;">
-                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Stream URL</label>
-                        <input type="text" id="streamUrlDup" required placeholder="https://www.youtube.com/watch?v=...">
-                    </div>
-                    <div style="margin-bottom: 16px;">
-                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Thumbnail URL (Optional)</label>
-                        <input type="text" id="streamThumbnailDup" placeholder="Leave blank for auto YouTube thumb">
-                    </div>
-                    <div style="margin-bottom: 20px;">
-                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Tag Models</label>
-                        <div class="model-tags-container" id="modelTagsListDup">
-                            <span style="color: var(--text-muted); font-size: 0.8rem; padding: 4px;">No models in directory</span>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-primary" style="width: 100%;">Save Stream</button>
-                </form>
-            </div>
-            <div>
-                <div class="live-thumb-preview-box" id="previewContainerDup">
-                    <span style="color: var(--text-muted);">Thumbnail Preview</span>
-                </div>
-            </div>
-        </div>
-
         <!-- PHOTO FORM CONTAINER -->
         <div id="photoSection" class="stream-layout-container" style="margin-top: 2px;">
             <div class="control-panel">
@@ -152,7 +119,6 @@
     <script src="storage.js"></script>
     <script>
         let selectedModels = [];
-        let selectedModelsDup = [];
         let selectedPhotoModels = [];
 
         // Universal parser for direct links, HTML tags, and BBCodes
@@ -213,33 +179,6 @@
             urlInput.addEventListener('input', updateThumbPreview);
             thumbInput.addEventListener('input', updateThumbPreview);
 
-            // Duplicate Stream Preview Listener
-            const urlInputDup = document.getElementById('streamUrlDup');
-            const thumbInputDup = document.getElementById('streamThumbnailDup');
-            const previewContainerDup = document.getElementById('previewContainerDup');
-
-            function updateThumbPreviewDup() {
-                let url = urlInputDup.value.trim();
-                let thumb = thumbInputDup.value.trim();
-                
-                if (!thumb && url && (url.includes('youtube.com') || url.includes('youtu.be'))) {
-                    let ytId = '';
-                    if (url.includes('embed/')) ytId = url.split('embed/')[1].split('?')[0];
-                    else if (url.includes('watch?v=')) ytId = url.split('watch?v=')[1].split('&')[0];
-                    else if (url.includes('youtu.be/')) ytId = url.split('youtu.be/')[1].split('?')[0];
-                    if (ytId) thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-                }
-
-                if (thumb) {
-                    previewContainerDup.innerHTML = `<img src="${thumb}" alt="Preview" style="width:100%;height:100%;object-fit:contain;border-radius:20px;background:#000;">`;
-                } else {
-                    previewContainerDup.innerHTML = `<span style="color: var(--text-muted);">Thumbnail Preview</span>`;
-                }
-            }
-
-            urlInputDup.addEventListener('input', updateThumbPreviewDup);
-            thumbInputDup.addEventListener('input', updateThumbPreviewDup);
-
             // Photo raw input preview listener
             const photoRawInput = document.getElementById('photoRawInput');
             const photoPreviewContainer = document.getElementById('photoPreviewContainer');
@@ -280,33 +219,6 @@
                 window.location.href = 'index.html';
             });
 
-            document.getElementById('streamFormDup').addEventListener('submit', (e) => {
-                e.preventDefault();
-                const title = document.getElementById('streamTitleDup').value.trim();
-                const url = document.getElementById('streamUrlDup').value.trim();
-                let thumbnail = document.getElementById('streamThumbnailDup').value.trim();
-
-                if (!thumbnail && url && (url.includes('youtube.com') || url.includes('youtu.be'))) {
-                    let ytId = '';
-                    if (url.includes('embed/')) ytId = url.split('embed/')[1].split('?')[0];
-                    else if (url.includes('watch?v=')) ytId = url.split('watch?v=')[1].split('&')[0];
-                    else if (url.includes('youtu.be/')) ytId = url.split('youtu.be/')[1].split('?')[0];
-                    if (ytId) thumbnail = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-                }
-
-                if (!title || !url) return;
-                
-                StorageDB.addStream({
-                    title,
-                    url,
-                    thumbnail: thumbnail || '',
-                    models: selectedModelsDup
-                });
-
-                alert('Stream saved successfully! Go to Gallery Hub to download your updated video-gallery.html file for GitHub.');
-                window.location.href = 'index.html';
-            });
-
             document.getElementById('photoForm').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const title = document.getElementById('photoTitle').value.trim();
@@ -330,12 +242,10 @@
         function renderModelTags() {
             const models = StorageDB.getModels();
             const container = document.getElementById('modelTagsList');
-            const containerDup = document.getElementById('modelTagsListDup');
             const photoContainer = document.getElementById('photoModelTagsList');
 
             if (models.length === 0) {
                 container.innerHTML = `<span style="color: var(--text-muted); font-size: 0.8rem; padding: 4px;">No models in directory</span>`;
-                containerDup.innerHTML = `<span style="color: var(--text-muted); font-size: 0.8rem; padding: 4px;">No models in directory</span>`;
                 photoContainer.innerHTML = `<span style="color: var(--text-muted); font-size: 0.8rem; padding: 4px;">No models in directory</span>`;
                 return;
             }
@@ -354,22 +264,6 @@
                     renderModelTags();
                 };
                 container.appendChild(tag);
-            });
-
-            containerDup.innerHTML = '';
-            models.forEach(model => {
-                const tag = document.createElement('div');
-                tag.className = `model-tag ${selectedModelsDup.includes(model.name) ? 'selected' : ''}`;
-                tag.textContent = model.name;
-                tag.onclick = () => {
-                    if (selectedModelsDup.includes(model.name)) {
-                        selectedModelsDup = selectedModelsDup.filter(m => m !== model.name);
-                    } else {
-                        selectedModelsDup.push(model.name);
-                    }
-                    renderModelTags();
-                };
-                containerDup.appendChild(tag);
             });
 
             photoContainer.innerHTML = '';
