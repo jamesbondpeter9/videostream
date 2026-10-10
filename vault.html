@@ -150,7 +150,8 @@
                 document.getElementById('albumsLink').href = `albums.html?name=${encodeURIComponent(modelName)}`;
 
                 const allStreams = StorageDB.getStreams();
-                const modelVideos = allStreams.filter(s => !s.isPhoto && !s.folder && s.models && s.models.map(m => m.toLowerCase()).includes(modelName.toLowerCase()));
+                const modelVideos = allStreams.filter(s => !s.isPhoto && s.models && s.models.map(m => m.toLowerCase()).includes(modelName.toLowerCase()));
+                // Explicitly check isPhoto for albums card thumbnail
                 const modelPhotos = allStreams.filter(s => s.isPhoto && s.models && s.models.map(m => m.toLowerCase()).includes(modelName.toLowerCase()));
 
                 if (modelVideos.length > 0 && modelVideos[0].thumbnail) {
