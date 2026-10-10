@@ -1,113 +1,68 @@
-/**
- * PhotoViewer.js - Lightbox & Gallery Carousel Viewer
- * Features: Lightbox view, backdrop blur overlay, backdrop dismissal, and carousel navigation.
- */
+window.PhotoViewer = (() => {
+    let overlay = null;
+    let currentItems = [];
+    let currentIndex = 0;
 
-class PhotoViewer {
-    static init() {
-        if (document.getElementById('photoViewerModal')) return;
-
-        const modalHTML = `
-            <div id="photoViewerModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); align-items:center; justify-content:center; padding:20px;">
-                <button id="pvClose" style="position:absolute; top:20px; right:25px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; width:44px; height:44px; border-radius:50%; font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10000; transition:background 0.2s;">&times;</button>
-                
-                <button id="pvPrev" style="position:absolute; left:20px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; width:50px; height:50px; border-radius:50%; font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10000; transition:background 0.2s;">&#10094;</button>
-                <button id="pvNext" style="position:absolute; right:20px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; width:50px; height:50px; border-radius:50%; font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10000; transition:background 0.2s;">&#10095;</button>
-
-                <div style="max-width:90vw; max-height:90vh; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative;">
-                    <img id="pvImage" src="" alt="Expanded View" style="max-width:100%; max-height:80vh; object-fit:contain; border-radius:12px; box-shadow:0 25px 50px rgba(0,0,0,0.9);">
-                    <div id="pvCaption" style="color:#fff; margin-top:14px; font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:0.95rem; text-align:center; text-shadow:0 2px 4px rgba(0,0,0,0.8);"></div>
-                </div>
+    function createOverlay() {
+        if (overlay) return;
+        overlay = document.createElement('div');
+        overlay.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,0.96); z-index:9999; align-items:center; justify-content:center; flex-direction:column;';
+        
+        overlay.innerHTML = `
+            <div style="position:absolute; top:20px; right:20px; display:flex; gap:12px; z-index:10000;">
+                <button id="pvClose" style="background:rgba(255,255,255,0.1); border:1px solid var(--card-border); color:#fff; padding:8px 16px; border-radius:12px; cursor:pointer; font-weight:700;">Close</button>
             </div>
+            <div style="position:absolute; left:20px; top:50%; transform:translateY(-50%); z-index:10000; cursor:pointer; background:rgba(0,0,0,0.5); padding:16px; color:#fff; font-size:1.5rem; border-radius:50%;" id="pvPrev">&#10094;</div>
+            <div style="position:absolute; right:20px; top:50%; transform:translateY(-50%); z-index:10000; cursor:pointer; background:rgba(0,0,0,0.5); padding:16px; color:#fff; font-size:1.5rem; border-radius:50%;" id="pvNext">&#10095;</div>
+            <div style="max-width:90vw; max-height:80vh; display:flex; align-items:center; justify-content:center;">
+                <img id="pvImage" src="" alt="" style="max-width:100%; max-height:80vh; object-fit:contain; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.8);">
+            </div>
+            <div id="pvCaption" style="margin-top:16px; color:#fff; font-size:0.9rem; font-weight:700; text-align:center;"></div>
         `;
 
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        document.body.appendChild(overlay);
 
-        // Event bindings
-        const modal = document.getElementById('photoViewerModal');
-        const closeBtn = document.getElementById('pvClose');
-        const prevBtn = document.getElementById('pvPrev');
-        const nextBtn = document.getElementById('pvNext');
+        document.getElementById('pvClose').onclick = close;
+        document.getElementById('pvPrev').onclick = () => navigate(-1);
+        document.getElementById('pvNext').onclick = () => navigate(1);
 
-        closeBtn.onclick = () => PhotoViewer.close();
-        
-        // Backdrop dismissal: click outside image container
-        modal.onclick = (e) => {
-            if (e.target === modal) {
-                PhotoViewer.close();
-            }
-        };
-
-        prevBtn.onclick = (e) => {
-            e.stopPropagation();
-            PhotoViewer.prev();
-        };
-
-        nextBtn.onclick = (e) => {
-            e.stopPropagation();
-            PhotoViewer.next();
-        };
-
-        // Keyboard navigation
         document.addEventListener('keydown', (e) => {
-            if (modal.style.display === 'flex') {
-                if (e.key === 'Escape') PhotoViewer.close();
-                if (e.key === 'ArrowLeft') PhotoViewer.prev();
-                if (e.key === 'ArrowRight') PhotoViewer.next();
+            if (overlay.style.display === 'flex') {
+                if (e.key === 'Escape') close();
+                if (e.key === 'ArrowLeft') navigate(-1);
+                if (e.key === 'ArrowRight') navigate(1);
             }
         });
     }
 
-    static galleryItems = [];
-    static currentIndex = 0;
-
-    static open(items, startIndex = 0) {
-        PhotoViewer.init();
-        PhotoViewer.galleryItems = items; // Expects array of objects: [{src: '...', title: '...'}]
-        PhotoViewer.currentIndex = startIndex;
-        PhotoViewer.updateView();
-        document.getElementById('photoViewerModal').style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+    function open(items, index = 0) {
+        createOverlay();
+        currentItems = items;
+        currentIndex = index;
+        updateView();
+        overlay.style.display = 'flex';
     }
 
-    static close() {
-        const modal = document.getElementById('photoViewerModal');
-        if (modal) {
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
+    function close() {
+        if (overlay) overlay.style.display = 'none';
     }
 
-    static prev() {
-        if (PhotoViewer.galleryItems.length === 0) return;
-        PhotoViewer.currentIndex = (PhotoViewer.currentIndex - 1 + PhotoViewer.galleryItems.length) % PhotoViewer.galleryItems.length;
-        PhotoViewer.updateView();
+    function navigate(direction) {
+        currentIndex += direction;
+        if (currentIndex < 0) currentIndex = currentItems.length - 1;
+        if (currentIndex >= currentItems.length) currentIndex = 0;
+        updateView();
     }
 
-    static next() {
-        if (PhotoViewer.galleryItems.length === 0) return;
-        PhotoViewer.currentIndex = (PhotoViewer.currentIndex + 1) % PhotoViewer.galleryItems.length;
-        PhotoViewer.updateView();
+    function updateView() {
+        if (!currentItems.length) return;
+        const item = currentItems[currentIndex];
+        const img = document.getElementById('pvImage');
+        const caption = document.getElementById('pvCaption');
+        
+        img.src = item.url;
+        caption.textContent = `${item.title || 'Photo'} (${currentIndex + 1} of ${currentItems.length})`;
     }
 
-    static updateView() {
-        const item = PhotoViewer.galleryItems[PhotoViewer.currentIndex];
-        if (!item) return;
-        const imgEl = document.getElementById('pvImage');
-        const captionEl = document.getElementById('pvCaption');
-        const prevBtn = document.getElementById('pvPrev');
-        const nextBtn = document.getElementById('pvNext');
-
-        imgEl.src = item.src;
-        captionEl.textContent = item.title || '';
-
-        // Hide navigation arrows if only 1 item exists
-        if (PhotoViewer.galleryItems.length <= 1) {
-            prevBtn.style.display = 'none';
-            nextBtn.style.display = 'none';
-        } else {
-            prevBtn.style.display = 'flex';
-            nextBtn.style.display = 'flex';
-        }
-    }
-}
+    return { open, close };
+})();
