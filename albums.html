@@ -97,6 +97,8 @@
             }
 
             const allStreams = StorageDB.getStreams();
+            
+            // STRICT FILTER: Only include items explicitly saved as photos (`isPhoto === true`)
             const matchedPhotos = allStreams.filter(item => {
                 if (!item.isPhoto) return false;
                 if (modelName) {
