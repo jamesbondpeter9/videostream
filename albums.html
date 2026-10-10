@@ -65,13 +65,14 @@
 
         <div class="tag-header">
             <h1 id="tagTitle" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Model Albums</h1>
-            <p id="tagSubtitle" style="color: var(--text-muted); font-size: 0.85rem;">Photo folders featuring this model</p>
+            <p id="tagSubtitle" style="color: var(--text-muted); font-size: 0.85rem;">Stored photo folders featuring this model</p>
         </div>
 
         <div class="tag-grid" id="albumGrid"></div>
     </div>
 
     <script src="storage.js"></script>
+    <script src="photoviewer.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
@@ -93,7 +94,7 @@
                 return;
             }
 
-            // Group photos by their folder name
+            // Group photos by their stored folder name
             const folders = {};
             matchedPhotos.forEach(photo => {
                 const folderName = photo.folder || photo.title.replace(/\s\(\d+\)$/, '') || 'General Album';
@@ -123,26 +124,26 @@
                     </div>`;
 
                 card.onclick = () => {
-                    openAlbumModal(folderName, folderItems);
+                    openFolderViewer(folderName, folderItems);
                 };
 
                 grid.appendChild(card);
             });
         });
 
-        function openAlbumModal(folderName, items) {
+        function openFolderViewer(folderName, items) {
             let modal = document.getElementById('albumModal');
             if (!modal) {
                 modal = document.createElement('div');
                 modal.id = 'albumModal';
-                modal.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:1000; overflow-y:auto; padding:40px 20px;';
+                modal.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:1000; overflow-y:auto; padding:40px 20px;';
                 document.body.appendChild(modal);
             }
 
-            let itemsHtml = items.map(item => `
-                <div style="background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; overflow:hidden; aspect-ratio:1/1; position:relative;">
+            let itemsHtml = items.map((item, idx) => `
+                <div class="album-thumb-item" data-index="${idx}" style="background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; overflow:hidden; aspect-ratio:1/1; position:relative; cursor:pointer;">
                     <img src="${item.url}" alt="${item.title}" style="width:100%; height:100%; object-fit:cover; display:block;">
-                    <a href="${item.url}" target="_blank" style="position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.7); color:#fff; padding:4px 8px; border-radius:8px; font-size:0.75rem; text-decoration:none;">View Full</a>
+                    <div style="position:absolute; bottom:0; left:0; width:100%; padding:6px 10px; font-size:0.7rem; color:#fff; background:rgba(0,0,0,0.6);">${item.title}</div>
                 </div>
             `).join('');
 
@@ -158,6 +159,20 @@
                 </div>
             `;
             modal.style.display = 'block';
+
+            // Bind click handlers to trigger photoviewer.js for lightbox viewing
+            const thumbElements = modal.querySelectorAll('.album-thumb-item');
+            thumbElements.forEach((el, idx) => {
+                el.onclick = () => {
+                    if (window.PhotoViewer && typeof window.PhotoViewer.open === 'function') {
+                        // Pass items array to photoviewer.js
+                        window.PhotoViewer.open(items, idx);
+                    } else {
+                        // Fallback open direct image in new tab if viewer script is detached
+                        window.open(items[idx].url, '_blank');
+                    }
+                };
+            });
         }
     </script>
 </body>
