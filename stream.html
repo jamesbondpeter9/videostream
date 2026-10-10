@@ -6,6 +6,27 @@
     <title>Add Content - Portal</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        .nav-bar-compact {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 2px;
+            margin-bottom: 24px;
+            max-width: 1650px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media(max-width: 900px) { .nav-bar-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+        .mondrian-nav-box {
+            height: 52px !important;
+            font-size: 0.85rem !important;
+            border-radius: 12px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
         .model-tags-container {
             display: flex;
             flex-wrap: wrap;
@@ -40,7 +61,7 @@
             flex-direction: column;
             gap: 2px;
             max-width: 1650px;
-            margin: 20px auto;
+            margin: 0 auto;
         }
         .stream-layout-container {
             margin: 0 !important;
@@ -49,6 +70,14 @@
 </head>
 <body>
     <div class="site-container">
+        <!-- Restored Top Navigation Bar -->
+        <div class="nav-bar-compact">
+            <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Home</div></a>
+            <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Models</div></a>
+            <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background:#fff; color:#000; font-size: 1.4rem; font-weight: 900;">+</div></a>
+            <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 0.8rem;">Hub</div></a>
+        </div>
+
         <div class="content-stack-wrapper">
             <!-- STREAM FORM CONTAINER -->
             <div id="streamSection" class="stream-layout-container">
@@ -250,8 +279,7 @@
                     });
                 });
 
-                // Automatically route to albums.html upon successful save
-                window.location.href = 'albums.html';
+                window.location.href = `albums.html${selectedPhotoModels.length > 0 ? '?name=' + encodeURIComponent(selectedPhotoModels[0]) : ''}`;
             });
         });
 
