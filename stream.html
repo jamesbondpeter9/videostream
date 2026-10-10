@@ -234,6 +234,7 @@
                 }
             });
 
+            // STREAM FORM SUBMISSION (Strictly isPhoto: false)
             document.getElementById('streamForm').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const title = document.getElementById('streamTitle').value.trim();
@@ -255,12 +256,13 @@
                     url,
                     thumbnail: thumbnail || '',
                     models: [...selectedModels],
-                    isPhoto: false
+                    isPhoto: false  // STRICT VIDEO STREAM FLAG
                 });
 
                 window.location.href = 'index.html';
             });
 
+            // PHOTO FORM SUBMISSION (Strictly isPhoto: true with folder)
             document.getElementById('photoForm').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const folderName = document.getElementById('photoTitle').value.trim();
@@ -276,8 +278,8 @@
                         url: imageUrl,
                         thumbnail: imageUrl,
                         models: [...selectedPhotoModels],
-                        isPhoto: true,
-                        folder: folderName
+                        isPhoto: true,       // STRICT PHOTO ALBUM FLAG
+                        folder: folderName   // STRICT FOLDER GROUPING
                     });
                 });
 
