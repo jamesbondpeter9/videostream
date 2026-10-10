@@ -97,9 +97,9 @@
 
             const allStreams = StorageDB.getStreams();
             
-            // STRICT FILTER: Exclude anything marked as photo or folder
+            // STRICT AIRTIGHT FILTER: Exclude anything with isPhoto === true or a folder tag
             const videoStreams = allStreams.filter(item => {
-                if (item.isPhoto || item.folder) return false;
+                if (item.isPhoto === true || item.folder) return false;
                 if (modelName) {
                     return item.models && item.models.map(m => m.toLowerCase()).includes(modelName.toLowerCase());
                 }
