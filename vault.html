@@ -6,156 +6,40 @@
     <title>Model Vault - Portal</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Compact Navigation Header Sizing (Home & Models only) */
-        .nav-bar-compact {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 2px;
-            margin-bottom: 20px;
+        .vault-header {
+            background: var(--card-bg);
+            backdrop-filter: blur(40px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8), var(--neon-glow);
             max-width: 1700px;
             margin-left: auto;
             margin-right: auto;
-        }
-        @media(max-width: 900px) { .nav-bar-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-
-        .mondrian-nav-box {
-            height: 52px !important;
-            font-size: 0.85rem !important;
-            border-radius: 12px !important;
-        }
-
-        /* Large Featured Square Thumbnails Section */
-        .featured-squares-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 2px;
-            margin-bottom: 24px;
-        }
-        @media(max-width: 900px) { .featured-squares-grid { grid-template-columns: 1fr; } }
-
-        .featured-square-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            overflow: hidden;
-            position: relative;
-            aspect-ratio: 1 / 1;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.6), var(--neon-glow);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Mosaic Grid configured for 180px base row height matching index.html */
-        .vault-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            grid-auto-rows: 180px;
-            grid-auto-flow: dense;
-            gap: 2px;
-            align-items: stretch;
-        }
-        @media(max-width: 1400px) { .vault-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-        @media(max-width: 900px) { .vault-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-        @media(max-width: 500px) { .vault-grid { grid-template-columns: 1fr; } }
-
-        .mondrian-card.landscape { grid-column: span 2; grid-row: span 3; }
-        .mondrian-card.portrait { grid-column: span 1; grid-row: span 2; }
-
-        .mondrian-thumb {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            border-radius: 20px;
-            overflow: hidden;
         }
     </style>
 </head>
 <body>
     <div class="site-container">
-        <!-- Top Nav Bar (Home & Models only) -->
-        <div class="nav-bar-compact">
-            <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Home</div></a>
-            <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background: #fff; color: #000;">Models</div></a>
+        <div class="vault-header">
+            <h1 id="vaultTitle" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Model Vault</h1>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Integrated media and photo folders</p>
         </div>
-
-        <!-- Two Large Curved Square Thumbnails -->
-        <div class="featured-squares-grid" id="featuredSquares">
-            <!-- Left Square (Albums - connected to albums.html) -->
-            <div class="featured-square-card">
-                <div id="featThumb1" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;position:relative;">
-                    <a id="albumsTagLink" href="#" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.4rem; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,0.9); z-index: 5; text-decoration: none;">Albums</a>
-                </div>
-            </div>
-            <!-- Right Square (Videos - connected to videotag.html) -->
-            <div class="featured-square-card">
-                <div id="featThumb2" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;position:relative;">
-                    <a id="videoTagLink" href="#" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.4rem; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,0.9); z-index: 5; text-decoration: none;">Videos</a>
-                </div>
-            </div>
+        <div style="max-width: 1700px; margin: 0 auto; text-align: center;">
+            <a href="albums.html" class="btn-primary" style="display:inline-block; padding:12px 24px; text-decoration:none;">View All Photo Albums</a>
         </div>
-
-        <div class="vault-grid" id="vaultGrid"></div>
     </div>
-
     <script src="storage.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
             const params = new URLSearchParams(window.location.search);
             const modelName = decodeURIComponent(params.get('name') ?? '');
-
             if (modelName) {
-                document.title = `${modelName} - Vault`;
-                document.getElementById('albumsTagLink').href = `albums.html?name=${encodeURIComponent(modelName)}`;
-                document.getElementById('videoTagLink').href = `videotag.html?name=${encodeURIComponent(modelName)}`;
+                document.getElementById('vaultTitle').textContent = `${modelName} - Vault`;
+                document.title = `${modelName} Vault - Portal`;
             }
-
-            const allStreams = StorageDB.getStreams();
-            const matchedStreams = allStreams.filter(stream => stream.models && stream.models.includes(modelName));
-
-            const feat1AlbumsLink = document.getElementById('albumsTagLink');
-            if (matchedStreams.length > 0) {
-                const s1 = matchedStreams[0];
-                if (s1.thumbnail) {
-                    const bgImg1 = document.createElement('img');
-                    bgImg1.src = s1.thumbnail;
-                    bgImg1.alt = s1.title;
-                    bgImg1.style.cssText = "object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0; z-index: 1;";
-                    feat1AlbumsLink.prepend(bgImg1);
-                }
-            }
-
-            const feat2VideoLink = document.getElementById('videoTagLink');
-            if (matchedStreams.length > 1) {
-                const s2 = matchedStreams[1];
-                if (s2.thumbnail) {
-                    const bgImg2 = document.createElement('img');
-                    bgImg2.src = s2.thumbnail;
-                    bgImg2.alt = s2.title;
-                    bgImg2.style.cssText = "object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0; z-index: 1;";
-                    feat2VideoLink.prepend(bgImg2);
-                }
-            }
-
-            const grid = document.getElementById('vaultGrid');
-            grid.innerHTML = '';
-            matchedStreams.forEach((stream, index) => {
-                const card = document.createElement('a');
-                const globalIndex = allStreams.findIndex(s => s.url === stream.url && s.title === stream.title);
-                card.href = `watch.html?index=${globalIndex}`;
-                
-                const patterns = ['landscape', 'portrait', 'portrait', 'landscape'];
-                card.className = `mondrian-card ${patterns[index % patterns.length]}`;
-
-                card.innerHTML = `
-                    <div class="mondrian-thumb">
-                        ${stream.thumbnail ? `<img src="${stream.thumbnail}" alt="${stream.title}" style="object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Thumbnail</div>'}
-                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px 14px; font-weight: 700; font-size: 0.8rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5;">${stream.title}</div>
-                    </div>`;
-                grid.appendChild(card);
-            });
         });
     </script>
 </body>
