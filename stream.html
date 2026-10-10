@@ -169,7 +169,7 @@
                     return;
                 }
 
-                const bbcodeImgMatch = val.match(/\[img\]([^\[]+)\[\/img\]/i);
+                const bbcodeImgMatch = val.match(/[img]([^\[]+)\[\/img\]/i);
                 if (bbcodeImgMatch && bbcodeImgMatch[1]) {
                     results.push(bbcodeImgMatch[1].trim());
                     return;
