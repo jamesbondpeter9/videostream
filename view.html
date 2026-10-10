@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Album - Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .nav-bar-compact {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 2px;
+            margin-bottom: 24px;
+            max-width: 1700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media(max-width: 900px) { .nav-bar-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+        .mondrian-nav-box {
+            height: 52px !important;
+            font-size: 0.85rem !important;
+            border-radius: 12px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .view-container {
+            max-width: 1700px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            backdrop-filter: blur(40px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8), var(--neon-glow);
+        }
+
+        .image-viewer-stage {
+            position: relative;
+            width: 100%;
+            min-height: 500px;
+            max-height: 80vh;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .image-viewer-stage img {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            display: block;
+        }
+
+        .viewer-controls-overlay {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            background: rgba(0,0,0,0.7);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            color: #fff;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+        }
+
+        .album-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .model-badge-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .model-badge {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .model-badge:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .album-grid-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .album-grid-thumb {
+            aspect-ratio: 1/1;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+            cursor: pointer;
+            position: relative;
+            background: #000;
+        }
+
+        .album-grid-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .album-grid-thumb:hover img {
+            transform: scale(1.08);
+        }
+    </style>
+</head>
+<body>
+    <div class="site-container">
+        <!-- Top Navigation Bar -->
+        <div class="nav-bar-compact">
+            <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Home</div></a>
+            <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Models</div></a>
+            <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 1.4rem; font-weight: 900;">+</div></a>
+            <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 0.8rem;">Hub</div></a>
+        </div>
+
+        <div class="view-container">
+            <!-- Image Stage Container -->
+            <div class="image-viewer-stage" id="stageContainer">
+                <span style="color: var(--text-muted);">Loading photo gallery...</span>
+            </div>
+
+            <div class="album-info-header">
+                <div>
+                    <h1 id="albumTitle" style="font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Loading Title...</h1>
+                    <div id="modelBadgesContainer" class="model-badge-list"></div>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button id="openLightboxBtn" class="btn-primary" style="padding: 10px 20px;">🔍 Fullscreen Gallery</button>
+                    <button id="deleteBtn" class="btn-primary" style="background: rgba(255, 50, 50, 0.2); border-color: rgba(255, 50, 50, 0.4); color: #ff6b6b; padding: 10px 20px;">Delete Photo</button>
+                </div>
+            </div>
+
+            <!-- Thumbnail Grid Preview for Album Context -->
+            <div class="album-grid-preview" id="albumGridPreview"></div>
+        </div>
+    </div>
+
+    <script src="storage.js"></script>
+    <script src="photoviewer.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await StorageDB.initDB();
+            const params = new URLSearchParams(window.location.search);
+            const index = parseInt(params.get('index'), 10);
+
+            const allStreams = StorageDB.getStreams();
+            if (isNaN(index) || !allStreams[index]) {
+                document.getElementById('stageContainer').innerHTML = `<span style="color: #ff6b6b;">Image not found or invalid index.</span>`;
+                document.getElementById('albumTitle').textContent = 'Content Unavailable';
+                return;
+            }
+
+            const currentItem = allStreams[index];
+            const folderName = currentItem.folder || currentItem.title.replace(/\s\(\d+\)$/, '') || 'General Album';
+            
+            // Gather all related photos in the same album folder
+            const folderItems = allStreams.filter(item => item.isPhoto && (item.folder === folderName || item.title.startsWith(folderName)));
+            const folderIndex = folderItems.findIndex(item => item.url === currentItem.url && item.title === currentItem.title);
+            const activeIndex = folderIndex >= 0 ? folderIndex : 0;
+
+            document.getElementById('albumTitle').textContent = folderName;
+            document.title = `${folderName} - View`;
+
+            // Stage Image Setup
+            const stageContainer = document.getElementById('stageContainer');
+            stageContainer.innerHTML = `
+                <img src="${currentItem.url || currentItem.thumbnail}" alt="${currentItem.title}">
+                <div class="viewer-controls-overlay">Click to launch Photoviewer (${activeIndex + 1}/${folderItems.length})</div>
+            `;
+
+            // Click stage image to launch photoviewer.js
+            stageContainer.onclick = () => {
+                if (window.PhotoViewer && typeof window.PhotoViewer.open === 'function') {
+                    window.PhotoViewer.open(folderItems.length > 0 ? folderItems : [currentItem], activeIndex);
+                }
+            };
+
+            // Fullscreen Button Listener
+            document.getElementById('openLightboxBtn').onclick = () => {
+                if (window.PhotoViewer && typeof window.PhotoViewer.open === 'function') {
+                    window.PhotoViewer.open(folderItems.length > 0 ? folderItems : [currentItem], activeIndex);
+                }
+            };
+
+            // Render Model Badges
+            const badgeContainer = document.getElementById('modelBadgesContainer');
+            if (currentItem.models && currentItem.models.length > 0) {
+                badgeContainer.innerHTML = currentItem.models.map(model => 
+                    `<a href="vault.html?name=${encodeURIComponent(model)}" class="model-badge">👤 ${model}</a>`
+                ).join('');
+            } else {
+                badgeContainer.innerHTML = `<span style="color: var(--text-muted); font-size: 0.75rem;">No models tagged</span>`;
+            }
+
+            // Render Related Album Grid Thumbnails
+            const gridPreview = document.getElementById('albumGridPreview');
+            if (folderItems.length > 0) {
+                gridPreview.innerHTML = folderItems.map((item, idx) => `
+                    <div class="album-grid-thumb ${idx === activeIndex ? 'active' : ''}" style="${idx === activeIndex ? 'border-color: #fff;' : ''}">
+                        <img src="${item.url || item.thumbnail}" alt="${item.title}">
+                    </div>
+                `).join('');
+
+                const thumbElements = gridPreview.querySelectorAll('.album-grid-thumb');
+                thumbElements.forEach((el, idx) => {
+                    el.onclick = () => {
+                        if (window.PhotoViewer && typeof window.PhotoViewer.open === 'function') {
+                            window.PhotoViewer.open(folderItems, idx);
+                        }
+                    };
+                });
+            } else {
+                gridPreview.style.display = 'none';
+            }
+
+            // Delete Photo Handler
+            document.getElementById('deleteBtn').onclick = () => {
+                if (confirm(`Are you sure you want to delete "${currentItem.title}"?`)) {
+                    StorageDB.deleteStream(index);
+                    alert('Photo deleted successfully.');
+                    window.location.href = 'albums.html';
+                }
+            };
+        });
+    </script>
+</body>
+</html>
