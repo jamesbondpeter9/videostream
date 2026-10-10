@@ -6,6 +6,27 @@
     <title>Model Albums - Portal</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        .nav-bar-compact {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 2px;
+            margin-bottom: 24px;
+            max-width: 1700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media(max-width: 900px) { .nav-bar-compact { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+        .mondrian-nav-box {
+            height: 52px !important;
+            font-size: 0.85rem !important;
+            border-radius: 12px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
         .tag-header {
             background: var(--card-bg);
             backdrop-filter: blur(40px);
@@ -46,9 +67,17 @@
 </head>
 <body>
     <div class="site-container">
+        <!-- Restored Top Navigation Bar -->
+        <div class="nav-bar-compact">
+            <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Home</div></a>
+            <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Models</div></a>
+            <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 1.4rem; font-weight: 900;">+</div></a>
+            <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 0.8rem;">Hub</div></a>
+        </div>
+
         <div class="tag-header">
             <h1 id="tagTitle" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Model Albums</h1>
-            <p id="tagSubtitle" style="color: var(--text-muted); font-size: 0.85rem;">Automatically generated photo folders</p>
+            <p id="tagSubtitle" style="color: var(--text-muted); font-size: 0.85rem;">Automatically generated photo folders featuring this model</p>
         </div>
 
         <div class="tag-grid" id="albumGrid"></div>
@@ -60,7 +89,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
             const params = new URLSearchParams(window.location.search);
-            const modelName = decodeURIComponent(params.get('name') ?? '');
+            const modelName = decodeURIComponent(params.get('name') ?? '').trim();
 
             if (modelName) {
                 document.getElementById('tagTitle').textContent = `${modelName} - Albums`;
@@ -71,14 +100,14 @@
             const matchedPhotos = allStreams.filter(item => {
                 if (!item.isPhoto) return false;
                 if (modelName) {
-                    return item.models && item.models.includes(modelName);
+                    return item.models && item.models.map(m => m.toLowerCase()).includes(modelName.toLowerCase());
                 }
                 return true;
             });
 
             const grid = document.getElementById('albumGrid');
             if (matchedPhotos.length === 0) {
-                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No photo albums found.</div>`;
+                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No photo albums found for this model.</div>`;
                 return;
             }
 
@@ -103,7 +132,7 @@
                 card.style.cursor = 'pointer';
 
                 card.innerHTML = `
-                    <div class="mondrian-thumb">
+                    <div class="mondrian-thumb" style="width:100%; height:100%; position:relative;">
                         ${coverThumb ? `<img src="${coverThumb}" alt="${folderName}" style="object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Cover</div>'}
                         <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px 14px; font-weight: 700; font-size: 0.85rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5; background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);">
                             📁 ${folderName} <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">(${folderItems.length})</span>
