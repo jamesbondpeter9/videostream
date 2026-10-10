@@ -44,6 +44,18 @@
             color: #000;
             border-color: #fff;
         }
+
+        /* Combined Stack Wrapper to align and reduce gap */
+        .content-stack-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            max-width: 1650px;
+            margin: 0 auto;
+        }
+        .stream-layout-container {
+            margin: 0 !important;
+        }
     </style>
 </head>
 <body>
@@ -53,64 +65,66 @@
             <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background:#fff; color:#000; font-size: 1.4rem; font-weight: 900;">+</div></a>
         </div>
 
-        <!-- STREAM FORM CONTAINER -->
-        <div id="streamSection" class="stream-layout-container" style="margin-bottom: 2px;">
-            <div class="control-panel">
-                <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 20px;">Add New Stream</h2>
-                <form id="streamForm">
-                    <div style="margin-bottom: 16px;">
-                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Stream Title</label>
-                        <input type="text" id="streamTitle" required placeholder="Enter stream title">
-                    </div>
-                    <div style="margin-bottom: 16px;">
-                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Stream URL</label>
-                        <input type="text" id="streamUrl" required placeholder="https://www.youtube.com/watch?v=...">
-                    </div>
-                    <div style="margin-bottom: 16px;">
-                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Thumbnail URL (Optional)</label>
-                        <input type="text" id="streamThumbnail" placeholder="Leave blank for auto YouTube thumb">
-                    </div>
-                    <div style="margin-bottom: 20px;">
-                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Tag Models</label>
-                        <div class="model-tags-container" id="modelTagsList">
-                            <span style="color: var(--text-muted); font-size: 0.8rem; padding: 4px;">No models in directory</span>
+        <div class="content-stack-wrapper">
+            <!-- STREAM FORM CONTAINER -->
+            <div id="streamSection" class="stream-layout-container">
+                <div class="control-panel">
+                    <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 20px;">Add New Stream</h2>
+                    <form id="streamForm">
+                        <div style="margin-bottom: 16px;">
+                            <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Stream Title</label>
+                            <input type="text" id="streamTitle" required placeholder="Enter stream title">
                         </div>
+                        <div style="margin-bottom: 16px;">
+                            <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Stream URL</label>
+                            <input type="text" id="streamUrl" required placeholder="https://www.youtube.com/watch?v=...">
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Thumbnail URL (Optional)</label>
+                            <input type="text" id="streamThumbnail" placeholder="Leave blank for auto YouTube thumb">
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Tag Models</label>
+                            <div class="model-tags-container" id="modelTagsList">
+                                <span style="color: var(--text-muted); font-size: 0.8rem; padding: 4px;">No models in directory</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width: 100%;">Save Stream</button>
+                    </form>
+                </div>
+                <div>
+                    <div class="live-thumb-preview-box" id="previewContainer">
+                        <span style="color: var(--text-muted);">Thumbnail Preview</span>
                     </div>
-                    <button type="submit" class="btn-primary" style="width: 100%;">Save Stream</button>
-                </form>
-            </div>
-            <div>
-                <div class="live-thumb-preview-box" id="previewContainer">
-                    <span style="color: var(--text-muted);">Thumbnail Preview</span>
                 </div>
             </div>
-        </div>
 
-        <!-- PHOTO FORM CONTAINER -->
-        <div id="photoSection" class="stream-layout-container" style="margin-top: 2px;">
-            <div class="control-panel">
-                <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 20px;">Add New Photo</h2>
-                <form id="photoForm">
-                    <div style="margin-bottom: 16px;">
-                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Photo Title</label>
-                        <input type="text" id="photoTitle" required placeholder="Enter photo title">
-                    </div>
-                    <div style="margin-bottom: 16px;">
-                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Direct Link / HTML / BBCode Input</label>
-                        <input type="text" id="photoRawInput" required placeholder="Paste direct URL, HTML img/a tag, or BBCode...">
-                    </div>
-                    <div style="margin-bottom: 20px;">
-                        <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Tag Models</label>
-                        <div class="model-tags-container" id="photoModelTagsList">
-                            <span style="color: var(--text-muted); font-size: 0.8rem; padding: 4px;">No models in directory</span>
+            <!-- PHOTO FORM CONTAINER -->
+            <div id="photoSection" class="stream-layout-container">
+                <div class="control-panel">
+                    <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 20px;">Add New Photo</h2>
+                    <form id="photoForm">
+                        <div style="margin-bottom: 16px;">
+                            <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Photo Title</label>
+                            <input type="text" id="photoTitle" required placeholder="Enter photo title">
                         </div>
+                        <div style="margin-bottom: 16px;">
+                            <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Direct Link / HTML / BBCode Input</label>
+                            <input type="text" id="photoRawInput" required placeholder="Paste direct URL, HTML img/a tag, or BBCode...">
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Tag Models</label>
+                            <div class="model-tags-container" id="photoModelTagsList">
+                                <span style="color: var(--text-muted); font-size: 0.8rem; padding: 4px;">No models in directory</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width: 100%;">Save Photo</button>
+                    </form>
+                </div>
+                <div>
+                    <div class="live-thumb-preview-box" id="photoPreviewContainer">
+                        <span style="color: var(--text-muted);">Thumbnail Preview</span>
                     </div>
-                    <button type="submit" class="btn-primary" style="width: 100%;">Save Photo</button>
-                </form>
-            </div>
-            <div>
-                <div class="live-thumb-preview-box" id="photoPreviewContainer">
-                    <span style="color: var(--text-muted);">Thumbnail Preview</span>
                 </div>
             </div>
         </div>
