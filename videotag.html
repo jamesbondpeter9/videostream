@@ -113,6 +113,7 @@
                 return;
             }
 
+            // Group photos by folder name
             const folders = {};
             matchedPhotos.forEach(photo => {
                 const folderName = photo.folder || photo.title.replace(/\s\(\d+\)$/, '') || 'General Album';
@@ -141,54 +142,20 @@
                         </div>
                     </div>`;
 
-                card.onclick = () => {
-                    openFolderViewer(folderName, folderItems);
+                // Explicitly bind Lightbox viewer and stop any propagation to prevent external links or watch.html redirection
+                card.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (window.PhotoViewer && typeof window.PhotoViewer.open === 'function') {
+                        window.PhotoViewer.open(folderItems, 0);
+                    } else {
+                        window.open(folderItems[0].url, '_blank');
+                    }
                 };
 
                 grid.appendChild(card);
             });
         });
-
-        function openFolderViewer(folderName, items) {
-            let modal = document.getElementById('albumModal');
-            if (!modal) {
-                modal = document.createElement('div');
-                modal.id = 'albumModal';
-                modal.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:1000; overflow-y:auto; padding:40px 20px;';
-                document.body.appendChild(modal);
-            }
-
-            let itemsHtml = items.map((item, idx) => `
-                <div class="album-thumb-item" data-index="${idx}" style="background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; overflow:hidden; aspect-ratio:1/1; position:relative; cursor:pointer;">
-                    <img src="${item.url}" alt="${item.title}" style="width:100%; height:100%; object-fit:cover; display:block;">
-                    <div style="position:absolute; bottom:0; left:0; width:100%; padding:6px 10px; font-size:0.7rem; color:#fff; background:rgba(0,0,0,0.6);">${item.title}</div>
-                </div>
-            `).join('');
-
-            modal.innerHTML = `
-                <div style="max-width:1400px; margin:0 auto;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-                        <h2 style="font-size:1.5rem; font-weight:800; color:#fff;">📁 ${folderName}</h2>
-                        <button onclick="document.getElementById('albumModal').style.display='none'" class="btn-primary" style="padding:8px 16px;">Close</button>
-                    </div>
-                    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:16px;">
-                        ${itemsHtml}
-                    </div>
-                </div>
-            `;
-            modal.style.display = 'block';
-
-            const thumbElements = modal.querySelectorAll('.album-thumb-item');
-            thumbElements.forEach((el, idx) => {
-                el.onclick = () => {
-                    if (window.PhotoViewer && typeof window.PhotoViewer.open === 'function') {
-                        window.PhotoViewer.open(items, idx);
-                    } else {
-                        window.open(items[idx].url, '_blank');
-                    }
-                };
-            });
-        }
     </script>
 </body>
 </html>
