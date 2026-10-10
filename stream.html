@@ -134,12 +134,9 @@
         let selectedModels = [];
         let selectedPhotoModels = [];
 
-        // Universal parser for batch direct links, HTML tags, and BBCodes
         function parseAllImageInputs(textInput) {
             if (!textInput) return [];
             const results = [];
-            
-            // Split by lines or common delimiters to handle batch pasting
             const chunks = textInput.split(/\r?\n|,/);
             
             chunks.forEach(chunk => {
@@ -170,7 +167,6 @@
                     return;
                 }
 
-                // Match any raw http/https link inside the chunk
                 const rawUrlMatch = val.match(/https?:\/\/[^\s"'<>]+/i);
                 if (rawUrlMatch) {
                     results.push(rawUrlMatch[0].trim());
@@ -210,7 +206,6 @@
             urlInput.addEventListener('input', updateThumbPreview);
             thumbInput.addEventListener('input', updateThumbPreview);
 
-            // Photo raw input preview listener (shows first valid parsed image)
             const photoRawInput = document.getElementById('photoRawInput');
             const photoPreviewContainer = document.getElementById('photoPreviewContainer');
 
@@ -243,7 +238,8 @@
                     title,
                     url,
                     thumbnail: thumbnail || '',
-                    models: selectedModels
+                    models: selectedModels,
+                    isPhoto: false
                 });
 
                 alert('Stream saved successfully! Go to Gallery Hub to download your updated video-gallery.html file for GitHub.');
@@ -264,7 +260,8 @@
                         title: photoTitle,
                         url: imageUrl,
                         thumbnail: imageUrl,
-                        models: selectedPhotoModels
+                        models: selectedPhotoModels,
+                        isPhoto: true
                     });
                 });
 
