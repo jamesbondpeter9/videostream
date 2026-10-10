@@ -254,6 +254,7 @@
 
                 if (!folderName || imageUrls.length === 0) return;
 
+                // Push each image into the database tagged with the folder name
                 imageUrls.forEach((imageUrl, idx) => {
                     const photoTitle = imageUrls.length > 1 ? `${folderName} (${idx + 1})` : folderName;
                     StorageDB.addStream({
@@ -266,7 +267,7 @@
                     });
                 });
 
-                alert('Photos saved successfully! Go to Gallery Hub to download your updated video-gallery.html file for GitHub.');
+                alert(`Folder "${folderName}" created and photos saved successfully! Go to Gallery Hub to download your updated video-gallery.html file for GitHub.`);
                 window.location.href = 'index.html';
             });
         });
