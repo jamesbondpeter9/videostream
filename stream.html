@@ -6,16 +6,6 @@
     <title>Add Content - Portal</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .nav-bar-compact {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 2px;
-            margin-bottom: 24px;
-            max-width: 1650px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
         .model-tags-container {
             display: flex;
             flex-wrap: wrap;
@@ -50,7 +40,7 @@
             flex-direction: column;
             gap: 2px;
             max-width: 1650px;
-            margin: 0 auto;
+            margin: 20px auto;
         }
         .stream-layout-container {
             margin: 0 !important;
@@ -59,11 +49,6 @@
 </head>
 <body>
     <div class="site-container">
-        <div class="nav-bar-compact">
-            <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Home</div></a>
-            <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background:#fff; color:#000; font-size: 1.4rem; font-weight: 900;">+</div></a>
-        </div>
-
         <div class="content-stack-wrapper">
             <!-- STREAM FORM CONTAINER -->
             <div id="streamSection" class="stream-layout-container">
@@ -117,7 +102,7 @@
                                 <span style="color: var(--text-muted); font-size: 0.8rem; padding: 4px;">No models in directory</span>
                             </div>
                         </div>
-                        <button type="submit" class="btn-primary" style="width: 100%;">Save Photos</button>
+                        <button type="submit" class="btn-primary" style="width: 100%;">Save Photos & Auto-Create Folder</button>
                     </form>
                 </div>
                 <div>
@@ -242,7 +227,6 @@
                     isPhoto: false
                 });
 
-                alert('Stream saved successfully! Go to Gallery Hub to download your updated video-gallery.html file for GitHub.');
                 window.location.href = 'index.html';
             });
 
@@ -254,7 +238,6 @@
 
                 if (!folderName || imageUrls.length === 0) return;
 
-                // Push each image into the database tagged with the folder name
                 imageUrls.forEach((imageUrl, idx) => {
                     const photoTitle = imageUrls.length > 1 ? `${folderName} (${idx + 1})` : folderName;
                     StorageDB.addStream({
@@ -267,8 +250,8 @@
                     });
                 });
 
-                alert(`Folder "${folderName}" created and photos saved successfully! Go to Gallery Hub to download your updated video-gallery.html file for GitHub.`);
-                window.location.href = 'index.html';
+                // Automatically route to albums.html upon successful save
+                window.location.href = 'albums.html';
             });
         });
 
