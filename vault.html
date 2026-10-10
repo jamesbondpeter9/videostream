@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Model Vault - Portal</title>
+    <title>Model Vault - Video Portal</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .nav-bar-compact {
@@ -40,55 +40,60 @@
             margin-right: auto;
         }
 
-        .vault-dual-grid {
+        .vault-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
+            grid-auto-rows: 280px;
+            gap: 2px;
+            align-items: stretch;
             max-width: 1700px;
             margin: 0 auto;
         }
-        @media(max-width: 768px) { .vault-dual-grid { grid-template-columns: 1fr; } }
+        @media(max-width: 768px) { .vault-grid { grid-template-columns: 1fr; } }
 
-        .vault-thumb-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            height: 380px;
+        .mondrian-card {
             position: relative;
+            border-radius: 20px;
             overflow: hidden;
-            display: flex;
-            align-items: flex-end;
-            padding: 32px;
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
             text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 24px;
             transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .vault-thumb-card:hover {
-            transform: translateY(-4px);
+
+        .mondrian-card:hover {
             border-color: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            transform: translateY(-2px);
         }
-        .vault-thumb-card img {
+
+        .mondrian-card img {
             position: absolute;
             inset: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
             z-index: 1;
-            filter: brightness(0.7);
+            filter: brightness(0.65);
             transition: transform 0.5s ease;
         }
-        .vault-thumb-card:hover img {
-            transform: scale(1.03);
-            filter: brightness(0.85);
+
+        .mondrian-card:hover img {
+            transform: scale(1.04);
+            filter: brightness(0.8);
         }
-        .vault-card-overlay {
+
+        .mondrian-card-overlay {
             position: absolute;
             inset: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.2) 60%, transparent);
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0.2) 70%, transparent);
             z-index: 2;
         }
-        .vault-card-content {
+
+        .mondrian-card-info {
             position: relative;
             z-index: 3;
         }
@@ -106,28 +111,25 @@
 
         <div class="vault-header">
             <h1 id="vaultTitle" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Model Vault</h1>
-            <p style="color: var(--text-muted); font-size: 0.85rem;">Select content type to browse</p>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Select content category</p>
         </div>
 
-        <!-- Restored Dual-Card Mondrian Thumbnail Layout -->
-        <div class="vault-dual-grid">
-            <a id="videosCardBtn" href="videotag.html" class="vault-thumb-card">
-                <img id="videosCoverImg" src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=800&q=80" alt="Videos">
-                <div class="vault-card-overlay"></div>
-                <div class="vault-card-content">
-                    <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 6px;">Collection</div>
-                    <h2 style="font-size: 2rem; font-weight: 900; color: #fff; margin: 0;">🎥 Videos</h2>
-                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px;">Browse video streams tagged for this model</p>
+        <div class="vault-grid">
+            <a id="videosLink" href="#" class="mondrian-card">
+                <img id="videosThumb" src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=800&q=80" alt="Videos">
+                <div class="mondrian-card-overlay"></div>
+                <div class="mondrian-card-info">
+                    <h2 style="font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Videos</h2>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">View model streams and video tags</p>
                 </div>
             </a>
 
-            <a id="albumsCardBtn" href="albums.html" class="vault-thumb-card">
-                <img id="albumsCoverImg" src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80" alt="Albums">
-                <div class="vault-card-overlay"></div>
-                <div class="vault-card-content">
-                    <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 6px;">Collection</div>
-                    <h2 style="font-size: 2rem; font-weight: 900; color: #fff; margin: 0;">📁 Albums</h2>
-                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px;">View photo galleries and album folders</p>
+            <a id="albumsLink" href="#" class="mondrian-card">
+                <img id="albumsThumb" src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80" alt="Albums">
+                <div class="mondrian-card-overlay"></div>
+                <div class="mondrian-card-info">
+                    <h2 style="font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Albums</h2>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Browse photo albums and image galleries</p>
                 </div>
             </a>
         </div>
@@ -144,20 +146,22 @@
                 document.getElementById('vaultTitle').textContent = `${modelName} - Vault`;
                 document.title = `${modelName} Vault - Portal`;
                 
-                document.getElementById('videosCardBtn').href = `videotag.html?name=${encodeURIComponent(modelName)}`;
-                document.getElementById('albumsCardBtn').href = `albums.html?name=${encodeURIComponent(modelName)}`;
+                document.getElementById('videosLink').href = `videotag.html?name=${encodeURIComponent(modelName)}`;
+                document.getElementById('albumsLink').href = `albums.html?name=${encodeURIComponent(modelName)}`;
 
-                // Dynamically fetch and display actual thumbnails for cover cards if available
                 const allStreams = StorageDB.getStreams();
                 const modelVideos = allStreams.filter(s => !s.isPhoto && !s.folder && s.models && s.models.map(m => m.toLowerCase()).includes(modelName.toLowerCase()));
                 const modelPhotos = allStreams.filter(s => s.isPhoto && s.models && s.models.map(m => m.toLowerCase()).includes(modelName.toLowerCase()));
 
                 if (modelVideos.length > 0 && modelVideos[0].thumbnail) {
-                    document.getElementById('videosCoverImg').src = modelVideos[0].thumbnail;
+                    document.getElementById('videosThumb').src = modelVideos[0].thumbnail;
                 }
                 if (modelPhotos.length > 0 && (modelPhotos[0].thumbnail || modelPhotos[0].url)) {
-                    document.getElementById('albumsCoverImg').src = modelPhotos[0].thumbnail || modelPhotos[0].url;
+                    document.getElementById('albumsThumb').src = modelPhotos[0].thumbnail || modelPhotos[0].url;
                 }
+            } else {
+                document.getElementById('videosLink').href = 'index.html';
+                document.getElementById('albumsLink').href = 'albums.html';
             }
         });
     </script>
