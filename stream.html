@@ -281,8 +281,7 @@
                     });
                 });
 
-                // Clear form and show success notice without redirecting away from stream.html
-                alert(`Photos saved successfully to album folder "${folderName}"!`);
+                alert(`Photos successfully saved to album folder "${folderName}"!`);
                 document.getElementById('photoForm').reset();
                 selectedPhotoModels = [];
                 photoPreviewContainer.innerHTML = `<span style="color: var(--text-muted);">Thumbnail Preview</span>`;
