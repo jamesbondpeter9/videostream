@@ -70,7 +70,7 @@
 </head>
 <body>
     <div class="site-container">
-        <!-- Restored Top Navigation Bar -->
+        <!-- Top Navigation Bar -->
         <div class="nav-bar-compact">
             <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Home</div></a>
             <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Models</div></a>
@@ -131,7 +131,7 @@
                                 <span style="color: var(--text-muted); font-size: 0.8rem; padding: 4px;">No models in directory</span>
                             </div>
                         </div>
-                        <button type="submit" class="btn-primary" style="width: 100%;">Save Photos & Auto-Create Folder</button>
+                        <button type="submit" class="btn-primary" style="width: 100%;">Save Photos</button>
                     </form>
                 </div>
                 <div>
@@ -169,7 +169,7 @@
                     return;
                 }
 
-                const bbcodeImgMatch = val.match(/[img]([^\[]+)\[\/img\]/i);
+                const bbcodeImgMatch = val.match(/\[img\]([^\[]+)\[\/img\]/i);
                 if (bbcodeImgMatch && bbcodeImgMatch[1]) {
                     results.push(bbcodeImgMatch[1].trim());
                     return;
@@ -205,7 +205,7 @@
                 if (!thumb && url && (url.includes('youtube.com') || url.includes('youtu.be'))) {
                     let ytId = '';
                     if (url.includes('embed/')) ytId = url.split('embed/')[1].split('?')[0];
-                    else if (url.includes('watch?v=')) ytId = url.split('watch?v=')[1].split('&')[0];
+                    else if (url.includes('watch?v=')) ytId = url.split('watch?v=')) ytId = url.split('watch?v=')[1].split('&')[0];
                     else if (url.includes('youtu.be/')) ytId = url.split('youtu.be/')[1].split('?')[0];
                     if (ytId) thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
                 }
