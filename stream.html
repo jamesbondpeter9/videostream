@@ -45,7 +45,6 @@
             border-color: #fff;
         }
 
-        /* Combined Stack Wrapper to align and reduce gap */
         .content-stack-wrapper {
             display: flex;
             flex-direction: column;
@@ -105,12 +104,12 @@
                     <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 20px;">Add New Photo</h2>
                     <form id="photoForm">
                         <div style="margin-bottom: 16px;">
-                            <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Photo Title</label>
-                            <input type="text" id="photoTitle" required placeholder="Enter photo title">
+                            <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Photo Title / Folder Name</label>
+                            <input type="text" id="photoTitle" required placeholder="Enter photo title or folder name">
                         </div>
                         <div style="margin-bottom: 16px;">
-                            <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Direct Link / HTML / BBCode Input</label>
-                            <input type="text" id="photoRawInput" required placeholder="Paste direct URL, HTML img/a tag, or BBCode...">
+                            <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Batch Direct Links / HTML / BBCodes Input</label>
+                            <textarea id="photoRawInput" required rows="4" placeholder="Paste multiple direct URLs, HTML tags, or BBCodes (one per line or separated)..." style="width: 100%; background: rgba(0, 0, 0, 0.75); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px 16px; color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; outline: none; resize: vertical;"></textarea>
                         </div>
                         <div style="margin-bottom: 20px;">
                             <label style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:6px;">Tag Models</label>
@@ -118,7 +117,7 @@
                                 <span style="color: var(--text-muted); font-size: 0.8rem; padding: 4px;">No models in directory</span>
                             </div>
                         </div>
-                        <button type="submit" class="btn-primary" style="width: 100%;">Save Photo</button>
+                        <button type="submit" class="btn-primary" style="width: 100%;">Save Photos</button>
                     </form>
                 </div>
                 <div>
@@ -135,32 +134,50 @@
         let selectedModels = [];
         let selectedPhotoModels = [];
 
-        // Universal parser for direct links, HTML tags, and BBCodes
-        function parseDirectImageInput(input) {
-            if (!input) return '';
-            let val = input.trim();
+        // Universal parser for batch direct links, HTML tags, and BBCodes
+        function parseAllImageInputs(textInput) {
+            if (!textInput) return [];
+            const results = [];
+            
+            // Split by lines or common delimiters to handle batch pasting
+            const chunks = textInput.split(/\r?\n|,/);
+            
+            chunks.forEach(chunk => {
+                let val = chunk.trim();
+                if (!val) return;
 
-            const htmlImgMatch = val.match(/<img[^>]+src=["']([^"']+)["']/i);
-            if (htmlImgMatch && htmlImgMatch[1]) {
-                return htmlImgMatch[1].trim();
-            }
+                const htmlImgMatch = val.match(/<img[^>]+src=["']([^"']+)["']/i);
+                if (htmlImgMatch && htmlImgMatch[1]) {
+                    results.push(htmlImgMatch[1].trim());
+                    return;
+                }
 
-            const htmlHrefMatch = val.match(/<a[^>]+href=["']([^"']+\.(?:png|jpg|jpeg|webp|gif|bmp)(?:\?[^"']*)?)["']/i);
-            if (htmlHrefMatch && htmlHrefMatch[1]) {
-                return htmlHrefMatch[1].trim();
-            }
+                const htmlHrefMatch = val.match(/<a[^>]+href=["']([^"']+\.(?:png|jpg|jpeg|webp|gif|bmp)(?:\?[^"']*)?)["']/i);
+                if (htmlHrefMatch && htmlHrefMatch[1]) {
+                    results.push(htmlHrefMatch[1].trim());
+                    return;
+                }
 
-            const bbcodeImgMatch = val.match(/[img]([^\[]+)\[\/img\]/i);
-            if (bbcodeImgMatch && bbcodeImgMatch[1]) {
-                return bbcodeImgMatch[1].trim();
-            }
+                const bbcodeImgMatch = val.match(/[img]([^\[]+)\[\/img\]/i);
+                if (bbcodeImgMatch && bbcodeImgMatch[1]) {
+                    results.push(bbcodeImgMatch[1].trim());
+                    return;
+                }
 
-            const quotedUrlMatch = val.match(/(?:src|href)=["'](https?:\/\/[^"']+)["']/i);
-            if (quotedUrlMatch && quotedUrlMatch[1]) {
-                return quotedUrlMatch[1].trim();
-            }
+                const quotedUrlMatch = val.match(/(?:src|href)=["'](https?:\/\/[^"']+)["']/i);
+                if (quotedUrlMatch && quotedUrlMatch[1]) {
+                    results.push(quotedUrlMatch[1].trim());
+                    return;
+                }
 
-            return val;
+                // Match any raw http/https link inside the chunk
+                const rawUrlMatch = val.match(/https?:\/\/[^\s"'<>]+/i);
+                if (rawUrlMatch) {
+                    results.push(rawUrlMatch[0].trim());
+                }
+            });
+
+            return results;
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -193,14 +210,14 @@
             urlInput.addEventListener('input', updateThumbPreview);
             thumbInput.addEventListener('input', updateThumbPreview);
 
-            // Photo raw input preview listener
+            // Photo raw input preview listener (shows first valid parsed image)
             const photoRawInput = document.getElementById('photoRawInput');
             const photoPreviewContainer = document.getElementById('photoPreviewContainer');
 
             photoRawInput.addEventListener('input', () => {
-                const parsedUrl = parseDirectImageInput(photoRawInput.value);
-                if (parsedUrl) {
-                    photoPreviewContainer.innerHTML = `<img src="${parsedUrl}" alt="Preview" style="width:100%;height:100%;object-fit:contain;border-radius:20px;background:#000;">`;
+                const parsedUrls = parseAllImageInputs(photoRawInput.value);
+                if (parsedUrls.length > 0) {
+                    photoPreviewContainer.innerHTML = `<img src="${parsedUrls[0]}" alt="Preview" style="width:100%;height:100%;object-fit:contain;border-radius:20px;background:#000;">`;
                 } else {
                     photoPreviewContainer.innerHTML = `<span style="color: var(--text-muted);">Thumbnail Preview</span>`;
                 }
@@ -235,20 +252,23 @@
 
             document.getElementById('photoForm').addEventListener('submit', (e) => {
                 e.preventDefault();
-                const title = document.getElementById('photoTitle').value.trim();
+                const folderName = document.getElementById('photoTitle').value.trim();
                 const rawVal = document.getElementById('photoRawInput').value.trim();
-                const imageUrl = parseDirectImageInput(rawVal);
+                const imageUrls = parseAllImageInputs(rawVal);
 
-                if (!title || !imageUrl) return;
+                if (!folderName || imageUrls.length === 0) return;
 
-                StorageDB.addStream({
-                    title,
-                    url: imageUrl,
-                    thumbnail: imageUrl,
-                    models: selectedPhotoModels
+                imageUrls.forEach((imageUrl, idx) => {
+                    const photoTitle = imageUrls.length > 1 ? `${folderName} (${idx + 1})` : folderName;
+                    StorageDB.addStream({
+                        title: photoTitle,
+                        url: imageUrl,
+                        thumbnail: imageUrl,
+                        models: selectedPhotoModels
+                    });
                 });
 
-                alert('Photo saved successfully! Go to Gallery Hub to download your updated video-gallery.html file for GitHub.');
+                alert('Photos saved successfully! Go to Gallery Hub to download your updated video-gallery.html file for GitHub.');
                 window.location.href = 'index.html';
             });
         });
