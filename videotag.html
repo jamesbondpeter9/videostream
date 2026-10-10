@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Model Videos - Portal</title>
+    <title>Model Albums - Portal</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .nav-bar-compact {
@@ -76,14 +76,15 @@
         </div>
 
         <div class="tag-header">
-            <h1 id="tagTitle" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Model Videos</h1>
-            <p id="tagSubtitle" style="color: var(--text-muted); font-size: 0.85rem;">Video streams featuring this model</p>
+            <h1 id="tagTitle" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Model Albums</h1>
+            <p id="tagSubtitle" style="color: var(--text-muted); font-size: 0.85rem;">Photo folders featuring this model</p>
         </div>
 
-        <div class="tag-grid" id="videoGrid"></div>
+        <div class="tag-grid" id="albumGrid"></div>
     </div>
 
     <script src="storage.js"></script>
+    <script src="photoviewer.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
@@ -91,44 +92,103 @@
             const modelName = decodeURIComponent(params.get('name') ?? '').trim();
 
             if (modelName) {
-                document.getElementById('tagTitle').textContent = `${modelName} - Videos`;
-                document.title = `${modelName} Videos - Portal`;
+                document.getElementById('tagTitle').textContent = `${modelName} - Albums`;
+                document.title = `${modelName} Albums - Portal`;
             }
 
             const allStreams = StorageDB.getStreams();
             
-            // STRICT FILTER: Exclude anything marked as photo or folder
-            const videoStreams = allStreams.filter(item => {
-                if (item.isPhoto || item.folder) return false;
+            // Filter strictly for saved photos (`isPhoto === true`)
+            const matchedPhotos = allStreams.filter(item => {
+                if (!item.isPhoto) return false;
                 if (modelName) {
                     return item.models && item.models.map(m => m.toLowerCase()).includes(modelName.toLowerCase());
                 }
                 return true;
             });
 
-            const grid = document.getElementById('videoGrid');
-            if (videoStreams.length === 0) {
-                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No video streams found for this model.</div>`;
+            const grid = document.getElementById('albumGrid');
+            if (matchedPhotos.length === 0) {
+                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No photo albums found for this model.</div>`;
                 return;
             }
 
-            grid.innerHTML = '';
-            videoStreams.forEach((stream, index) => {
-                const card = document.createElement('a');
-                const globalIndex = allStreams.findIndex(s => s.url === stream.url && s.title === stream.title);
-                card.href = `watch.html?index=${globalIndex}`;
+            const folders = {};
+            matchedPhotos.forEach(photo => {
+                const folderName = photo.folder || photo.title.replace(/\s\(\d+\)$/, '') || 'General Album';
+                if (!folders[folderName]) {
+                    folders[folderName] = [];
+                }
+                folders[folderName].push(photo);
+            });
 
+            grid.innerHTML = '';
+            const folderNames = Object.keys(folders);
+            folderNames.forEach((folderName, index) => {
+                const folderItems = folders[folderName];
+                const coverThumb = folderItems[0].thumbnail || folderItems[0].url;
+
+                const card = document.createElement('div');
                 const patterns = ['landscape', 'portrait', 'portrait', 'landscape'];
                 card.className = `mondrian-card ${patterns[index % patterns.length]}`;
+                card.style.cursor = 'pointer';
 
                 card.innerHTML = `
-                    <div class="mondrian-thumb">
-                        ${stream.thumbnail ? `<img src="${stream.thumbnail}" alt="${stream.title}" style="object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Thumbnail</div>'}
-                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px 14px; font-weight: 700; font-size: 0.8rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5;">${stream.title}</div>
+                    <div class="mondrian-thumb" style="width:100%; height:100%; position:relative;">
+                        ${coverThumb ? `<img src="${coverThumb}" alt="${folderName}" style="object-fit: cover; width: 100%; height: 100%; position: absolute; inset: 0;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;">No Cover</div>'}
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px 14px; font-weight: 700; font-size: 0.85rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 5; background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);">
+                            📁 ${folderName} <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">(${folderItems.length})</span>
+                        </div>
                     </div>`;
+
+                card.onclick = () => {
+                    openFolderViewer(folderName, folderItems);
+                };
+
                 grid.appendChild(card);
             });
         });
+
+        function openFolderViewer(folderName, items) {
+            let modal = document.getElementById('albumModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'albumModal';
+                modal.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:1000; overflow-y:auto; padding:40px 20px;';
+                document.body.appendChild(modal);
+            }
+
+            let itemsHtml = items.map((item, idx) => `
+                <div class="album-thumb-item" data-index="${idx}" style="background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; overflow:hidden; aspect-ratio:1/1; position:relative; cursor:pointer;">
+                    <img src="${item.url}" alt="${item.title}" style="width:100%; height:100%; object-fit:cover; display:block;">
+                    <div style="position:absolute; bottom:0; left:0; width:100%; padding:6px 10px; font-size:0.7rem; color:#fff; background:rgba(0,0,0,0.6);">${item.title}</div>
+                </div>
+            `).join('');
+
+            modal.innerHTML = `
+                <div style="max-width:1400px; margin:0 auto;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                        <h2 style="font-size:1.5rem; font-weight:800; color:#fff;">📁 ${folderName}</h2>
+                        <button onclick="document.getElementById('albumModal').style.display='none'" class="btn-primary" style="padding:8px 16px;">Close</button>
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:16px;">
+                        ${itemsHtml}
+                    </div>
+                </div>
+            `;
+            modal.style.display = 'block';
+
+            const thumbElements = modal.querySelectorAll('.album-thumb-item');
+            thumbElements.forEach((el, idx) => {
+                el.onclick = () => {
+                    if (window.PhotoViewer && typeof window.PhotoViewer.open === 'function') {
+                        window.PhotoViewer.open(items, idx);
+                    } else {
+                        window.open(items[idx].url, '_blank');
+                    }
+                };
+            });
+        }
     </script>
 </body>
 </html>
