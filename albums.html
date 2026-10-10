@@ -98,9 +98,11 @@
 
             const allStreams = StorageDB.getStreams();
             
-            // Filter strictly for saved photos (`isPhoto === true`)
+            // STRICT FILTER: Only process items explicitly marked as photos (`isPhoto === true`). 
+            // This completely ignores video streams and their manual or auto-generated thumbnails.
             const matchedPhotos = allStreams.filter(item => {
-                if (!item.isPhoto) return false;
+                if (item.isPhoto !== true) return false;
+                if (!item.url) return false;
                 if (modelName) {
                     return item.models && item.models.map(m => m.toLowerCase()).includes(modelName.toLowerCase());
                 }
@@ -127,7 +129,7 @@
             const folderNames = Object.keys(folders);
             folderNames.forEach((folderName, index) => {
                 const folderItems = folders[folderName];
-                const coverThumb = folderItems[0].thumbnail || folderItems[0].url;
+                const coverThumb = folderItems[0].url || folderItems[0].thumbnail;
 
                 const card = document.createElement('div');
                 const patterns = ['landscape', 'portrait', 'portrait', 'landscape'];
@@ -142,7 +144,7 @@
                         </div>
                     </div>`;
 
-                // Launch Lightbox directly via Photoviewer.js
+                // Launch Photoviewer.js lightbox gallery
                 card.onclick = (e) => {
                     e.preventDefault();
                     e.stopPropagation();
