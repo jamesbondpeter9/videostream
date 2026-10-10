@@ -281,7 +281,12 @@
                     });
                 });
 
-                window.location.href = `albums.html${selectedPhotoModels.length > 0 ? '?name=' + encodeURIComponent(selectedPhotoModels[0]) : ''}`;
+                // Clear form and show success notice without redirecting away from stream.html
+                alert(`Photos saved successfully to album folder "${folderName}"!`);
+                document.getElementById('photoForm').reset();
+                selectedPhotoModels = [];
+                photoPreviewContainer.innerHTML = `<span style="color: var(--text-muted);">Thumbnail Preview</span>`;
+                renderModelTags();
             });
         });
 
@@ -296,7 +301,6 @@
                 return;
             }
 
-            // Render Stream Form Model Tags
             container.innerHTML = '';
             models.forEach(model => {
                 const modelName = typeof model === 'object' ? model.name : model;
@@ -314,7 +318,6 @@
                 container.appendChild(tag);
             });
 
-            // Render Photo Form Model Tags
             photoContainer.innerHTML = '';
             models.forEach(model => {
                 const modelName = typeof model === 'object' ? model.name : model;
