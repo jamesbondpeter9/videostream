@@ -6,12 +6,11 @@
     <title>Model Videos - Portal</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Compact Navigation Header Sizing */
         .nav-bar-compact {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 2px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             max-width: 1700px;
             margin-left: auto;
             margin-right: auto;
@@ -22,6 +21,10 @@
             height: 52px !important;
             font-size: 0.85rem !important;
             border-radius: 12px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
         }
 
         .tag-header {
@@ -32,9 +35,11 @@
             padding: 24px 32px;
             margin-bottom: 24px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.8), var(--neon-glow);
+            max-width: 1700px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        /* Mosaic Grid configured for 180px base row height matching index.html */
         .tag-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -42,21 +47,15 @@
             grid-auto-flow: dense;
             gap: 2px;
             align-items: stretch;
+            max-width: 1700px;
+            margin: 0 auto;
         }
         @media(max-width: 1400px) { .tag-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
         @media(max-width: 900px) { .tag-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media(max-width: 500px) { .tag-grid { grid-template-columns: 1fr; } }
 
-        /* Matching exact index.html landscape and portrait card dimensions */
-        .mondrian-card.landscape { 
-            grid-column: span 2; 
-            grid-row: span 3; 
-        }
-
-        .mondrian-card.portrait { 
-            grid-column: span 1; 
-            grid-row: span 2; 
-        }
+        .mondrian-card.landscape { grid-column: span 2; grid-row: span 3; }
+        .mondrian-card.portrait { grid-column: span 1; grid-row: span 2; }
 
         .mondrian-thumb {
             display: flex;
@@ -68,18 +67,20 @@
 </head>
 <body>
     <div class="site-container">
-        <!-- Top Nav Bar (Home & Models) -->
+        <!-- Top Navigation Bar -->
         <div class="nav-bar-compact">
             <a href="index.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Home</div></a>
-            <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="background: #fff; color: #000;">Models</div></a>
+            <a href="models.html" class="mondrian-nav-card"><div class="mondrian-nav-box">Models</div></a>
+            <a href="stream.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 1.4rem; font-weight: 900;">+</div></a>
+            <a href="video-gallery.html" class="mondrian-nav-card"><div class="mondrian-nav-box" style="font-size: 0.8rem;">Hub</div></a>
         </div>
 
         <div class="tag-header">
-            <h1 id="tagTitle" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Tagged Videos</h1>
-            <p id="tagSubtitle" style="color: var(--text-muted); font-size: 0.85rem;">Videos featuring this model</p>
+            <h1 id="tagTitle" style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px;">Model Videos</h1>
+            <p id="tagSubtitle" style="color: var(--text-muted); font-size: 0.85rem;">Video streams featuring this model</p>
         </div>
 
-        <div class="tag-grid" id="tagGrid"></div>
+        <div class="tag-grid" id="videoGrid"></div>
     </div>
 
     <script src="storage.js"></script>
@@ -87,7 +88,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             await StorageDB.initDB();
             const params = new URLSearchParams(window.location.search);
-            const modelName = decodeURIComponent(params.get('name') ?? '');
+            const modelName = decodeURIComponent(params.get('name') ?? '').trim();
 
             if (modelName) {
                 document.getElementById('tagTitle').textContent = `${modelName} - Videos`;
@@ -95,21 +96,28 @@
             }
 
             const allStreams = StorageDB.getStreams();
-            const matchedStreams = allStreams.filter(stream => stream.models && stream.models.includes(modelName));
+            
+            // Strictly filter out photo items so only video streams appear
+            const videoStreams = allStreams.filter(item => {
+                if (item.isPhoto || item.folder) return false;
+                if (modelName) {
+                    return item.models && item.models.map(m => m.toLowerCase()).includes(modelName.toLowerCase());
+                }
+                return true;
+            });
 
-            const grid = document.getElementById('tagGrid');
-            if (matchedStreams.length === 0) {
-                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No tagged videos found for this model.</div>`;
+            const grid = document.getElementById('videoGrid');
+            if (videoStreams.length === 0) {
+                grid.innerHTML = `<div style="grid-column: span 4; text-align: center; color: var(--text-muted); padding: 60px;">No video streams found for this model.</div>`;
                 return;
             }
 
             grid.innerHTML = '';
-            matchedStreams.forEach((stream, index) => {
+            videoStreams.forEach((stream, index) => {
                 const card = document.createElement('a');
                 const globalIndex = allStreams.findIndex(s => s.url === stream.url && s.title === stream.title);
                 card.href = `watch.html?index=${globalIndex}`;
-                
-                // Alternating pattern between landscape and portrait sizes matching index.html
+
                 const patterns = ['landscape', 'portrait', 'portrait', 'landscape'];
                 card.className = `mondrian-card ${patterns[index % patterns.length]}`;
 
