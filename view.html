@@ -178,8 +178,8 @@
             const index = parseInt(params.get('index'), 10);
 
             const allStreams = StorageDB.getStreams();
-            if (isNaN(index) || !allStreams[index]) {
-                document.getElementById('stageContainer').innerHTML = `<span style="color: #ff6b6b;">Image not found or invalid index.</span>`;
+            if (isNaN(index) || !allStreams[index] || allStreams[index].isPhoto !== true) {
+                document.getElementById('stageContainer').innerHTML = `<span style="color: #ff6b6b;">Photo not found or invalid index.</span>`;
                 document.getElementById('albumTitle').textContent = 'Content Unavailable';
                 return;
             }
@@ -187,8 +187,8 @@
             const currentItem = allStreams[index];
             const folderName = currentItem.folder || currentItem.title.replace(/\s\(\d+\)$/, '') || 'General Album';
             
-            // Gather all related photos in the same album folder
-            const folderItems = allStreams.filter(item => item.isPhoto && (item.folder === folderName || item.title.startsWith(folderName)));
+            // STRICT FILTER: Gather only true photo items
+            const folderItems = allStreams.filter(item => item.isPhoto === true && (item.folder === folderName || item.title.startsWith(folderName)));
             const folderIndex = folderItems.findIndex(item => item.url === currentItem.url && item.title === currentItem.title);
             const activeIndex = folderIndex >= 0 ? folderIndex : 0;
 
@@ -198,21 +198,19 @@
             // Stage Image Setup
             const stageContainer = document.getElementById('stageContainer');
             stageContainer.innerHTML = `
-                <img src="${currentItem.url || currentItem.thumbnail}" alt="${currentItem.title}">
+                <img src="${currentItem.url}" alt="${currentItem.title}">
                 <div class="viewer-controls-overlay">Click to launch Photoviewer (${activeIndex + 1}/${folderItems.length})</div>
             `;
 
-            // Click stage image to launch photoviewer.js
             stageContainer.onclick = () => {
                 if (window.PhotoViewer && typeof window.PhotoViewer.open === 'function') {
-                    window.PhotoViewer.open(folderItems.length > 0 ? folderItems : [currentItem], activeIndex);
+                    window.PhotoViewer.open(folderItems, activeIndex);
                 }
             };
 
-            // Fullscreen Button Listener
             document.getElementById('openLightboxBtn').onclick = () => {
                 if (window.PhotoViewer && typeof window.PhotoViewer.open === 'function') {
-                    window.PhotoViewer.open(folderItems.length > 0 ? folderItems : [currentItem], activeIndex);
+                    window.PhotoViewer.open(folderItems, activeIndex);
                 }
             };
 
@@ -231,7 +229,7 @@
             if (folderItems.length > 0) {
                 gridPreview.innerHTML = folderItems.map((item, idx) => `
                     <div class="album-grid-thumb ${idx === activeIndex ? 'active' : ''}" style="${idx === activeIndex ? 'border-color: #fff;' : ''}">
-                        <img src="${item.url || item.thumbnail}" alt="${item.title}">
+                        <img src="${item.url}" alt="${item.title}">
                     </div>
                 `).join('');
 
